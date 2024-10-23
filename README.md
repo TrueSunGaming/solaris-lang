@@ -115,3 +115,34 @@ fn main(const string[] argv) {
   }
 }
 ```
+
+Classes
+```
+class MyClass {
+  public int property;
+  protected int otherProperty;
+  private int anotherProperty;
+
+  public constructor(property, otherProperty, anotherProperty) {
+    this.property = property;
+    this.otherProperty = otherProperty;
+    this.anotherProperty = anotherProperty;
+  }
+
+  public destructor() {
+    std::println("MyClass destroyed");
+  }
+
+  public fn myMethod() {
+    std::println(this.property);
+  }
+
+  public get int another() {
+    return this.anotherProperty;
+  }
+
+  public set int another(const int value) {
+    this.anotherProperty = value;
+  }
+}
+```

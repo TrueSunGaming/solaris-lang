@@ -50,4 +50,8 @@ constref [string, int] x;
 
 // tuple of 3 ints and 2 strings
 constref [int:3, string:2] x;
+
+// array members are mutable by default, unless the array is const
+const int[] x;
+constref (const int)[] x;
 ```

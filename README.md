@@ -100,8 +100,18 @@ enum PredefinedEnum {
   Name = "hi"
 }
 
-enum ParameterEnum<T> {
-  Some(T value),
-  None
+// parameterized enums
+enum Result<T, E> {
+  Success(T),
+  Error(E)
+}
+
+fn main(const string[] argv) {
+  Result<const int, const string> result = Result.Success(69);
+
+  decompose result {
+    Success(const int? success),
+    Error(const string? error)
+  }
 }
 ```

@@ -138,11 +138,25 @@ class MyClass {
   }
 
   public get int another() {
+    std::println("Getting another");
     return this.anotherProperty;
   }
 
   public set int another(const int value) {
+    std::println("Setting another");
     this.anotherProperty = value;
   }
+}
+
+fn main(const string[] argv) {
+  constref MyClass instance = new MyClass(1, 2, 3);
+
+  std::println(instance.property); // 1
+  std::println(instance.otherProperty); // error
+  std::println(instance.anotherProperty); // error
+  
+  std::println(instance.another); // "Getting another", 3
+  instance.another = 5; // "Setting another"
+  std::println(instance.another); // "Getting another", 5
 }
 ```

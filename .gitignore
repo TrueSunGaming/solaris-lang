@@ -14,3 +14,7 @@ build
 .vscode
 test.*
 test
+*.a
+*.lib
+*.so
+*.dll

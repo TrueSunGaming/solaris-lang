@@ -22,7 +22,7 @@ const int x;
 
 Functions
 ```
-fn const int add(int a, int b) {
+fn const int add(const int a, const int b) {
   return a + b;
 }
 

@@ -8,7 +8,7 @@ std::string FileManager::read() const {
     
     std::string res;
     std::string line;
-    while (std::getline(file, line)) res += line;
+    while (std::getline(file, line)) res += line + "\n";
 
     file.close();
 

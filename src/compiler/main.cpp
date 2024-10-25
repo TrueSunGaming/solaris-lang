@@ -1,8 +1,8 @@
 #include <iostream>
-#include "../universal/string/splitString.hpp"
+#include "./tokenizer/minimize.hpp"
+#include "../universal/file/FileManager.hpp"
 
 int main() {
-    std::vector<std::string> split = splitString("hello1 hello2 hello3", " ");
-
-    for (auto i : split) std::cout << i << std::endl;
+    FileManager file = FileManager("test.sol");
+    std::cout << minimize(file.read()) << std::endl;
 }

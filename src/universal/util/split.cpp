@@ -1,7 +1,7 @@
-#include "splitString.hpp"
+#include "split.hpp"
 #include <iostream>
 
-std::vector<std::string> splitString(const std::string str, std::string delim) {
+std::vector<std::string> split(const std::string str, std::string delim) {
     std::vector<std::string> res;
 
     size_t pos = 0;

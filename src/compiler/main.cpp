@@ -1,5 +1,5 @@
 #include <iostream>
-#include "./tokenizer/minimize.hpp"
+#include "./lexer/minimize.hpp"
 #include "../universal/file/FileManager.hpp"
 
 int main() {

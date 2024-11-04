@@ -11,6 +11,7 @@ class Token {
         int line;
         int column;
 
+        Token() = default;
         Token(std::string value, enum TokenType type, std::string filepath, int line, int column);
         ~Token() = default;
 };

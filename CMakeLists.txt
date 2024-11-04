@@ -7,6 +7,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTDIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTDIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTDIR})
 
+set(CMAKE_CXX_STANDARD 17)
+
 if (WIN32)
     set(LIB_EXTENSION "dll")
 endif (WIN32)
@@ -30,3 +32,4 @@ target_link_libraries(compiler ${LIB_PATH})
 add_library(skibidi SHARED)
 file(GLOB_RECURSE UNIVERSAL_SOURCES "src/universal/**.cpp")
 target_sources(skibidi PUBLIC ${UNIVERSAL_SOURCES})
+target_compile_options(skibidi PUBLIC -std=gnu++17)

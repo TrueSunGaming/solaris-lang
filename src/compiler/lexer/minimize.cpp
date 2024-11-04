@@ -2,27 +2,27 @@
 #include "../../universal/util/split.hpp"
 #include "../../universal/util/trim.hpp"
 #include "../../universal/util/filter.hpp"
+#include "../../universal/regex/eraseRegex.hpp"
+#include "../../universal/regex/findRegex.hpp"
 #include "removeComments.hpp"
-#include <vector>
+#include "TokenType.hpp"
 
-using std::string;
-using std::vector;
-using std::function;
-
-string minimize(const string code) {
-    vector<string> lines = split(code, "\n");
+std::string minimize(const std::string code) {
+    std::vector<std::string> lines = split(code, "\n");
 
     for (auto &i : lines) {
         removeLineComment(i);
         trim(i);
     }
 
-    vector<string> emptyFiltered = filter(lines, (function<bool(string)>)[](string v) {
+    std::vector<std::string> emptyFiltered = filter(lines, (std::function<bool(std::string)>)[](std::string v) {
         return v.size() > 0;
     });
 
-    string res;
+    std::string res;
     for (auto i : emptyFiltered) res += i;
+
+    eraseRegex(res, MULTILINE_COMMENT_REGEX, findRegex(res, STRING_REGEX));
 
     return res;
 }

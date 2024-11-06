@@ -1,12 +1,8 @@
 #pragma once
 
 #include <regex>
-
-const std::regex IDENTIFIER_REGEX = std::regex(R"([a-zA-Z_$][\w$]*)");
-const std::regex INTEGER_REGEX = std::regex(R"(\d+(e\+?\d+)?)");
-const std::regex FLOAT_REGEX = std::regex(R"((\d+\.(\d*)?(e(-|\+)?\d+(\.\d*)?)?)|(\d+(\.\d*)?e-\d+(\.\d*)?))");
-const std::regex STRING_REGEX = std::regex(R"((['"])(?:(?:\\.|[^\\])*?)\1)");
-const std::regex MULTILINE_COMMENT_REGEX = std::regex(R"(\/\*.*?\*\/)");
+#include <map>
+#include <unordered_set>
 
 enum TokenType {
     EOL,
@@ -21,7 +17,43 @@ enum TokenType {
     CURLY_OPEN,
     CURLY_CLOSE,
     COMMA,
-    COLON,
-    OPERATOR,
-    QUESTION
+    OPERATOR
+};
+
+const std::regex MULTILINE_COMMENT_REGEX = std::regex(R"(\/\*.*?\*\/)");
+const std::unordered_set<std::string> joinedOperators = {
+    "==", // equal
+    "+=", // add assign
+    "-=", // sub assign
+    "*=", // mul assign
+    "/=", // div assign
+    "%=", // mod assign
+    "!=", // not equal
+    ">=", // greater equal
+    "<=", // less equal
+    "::", // namespace
+    "++", // increment
+    "--", // decrement
+    "||", // boolean or
+    "&&", // boolean and
+    "^^", // boolean xor
+    "**", // exp
+    "??", // nullish coalescing,
+    "?.", // optional chaining
+};
+
+const std::map<TokenType, std::string> tokenRegexMap = {
+    { EOL, R"(;)" },
+    { IDENTIFIER, R"([a-zA-Z_$][\w$]*)" },
+    { INTEGER, R"(\d+(e\+?\d+)?)" },
+    { FLOAT, R"((\d+\.(\d*)?(e(-|\+)?\d+(\.\d*)?)?)|(\d+(\.\d*)?e-\d+(\.\d*)?))" },
+    { STRING, R"((['"])(?:(?:\\.|[^\\])*?)\1)" },
+    { PARENTHESIS_OPEN, R"(\()" },
+    { PARENTHESIS_CLOSE, R"(\))" },
+    { SQUARE_OPEN, R"(\[)" },
+    { SQUARE_CLOSE, R"(\])" },
+    { CURLY_OPEN, R"(\{)" },
+    { CURLY_CLOSE, R"(\})" },
+    { COMMA, R"(,)" },
+    { OPERATOR, R"([+\-*/=!<>:?%&|^~])" }
 };

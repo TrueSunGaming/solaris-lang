@@ -7,10 +7,10 @@
 #include "removeComments.hpp"
 #include "TokenType.hpp"
 
-std::string minimize(const std::string code) {
+std::string minimize(const std::string& code) {
     std::vector<std::string> lines = split(code, "\n");
 
-    for (auto &i : lines) {
+    for (auto& i : lines) {
         removeLineComment(i);
         trim(i);
     }
@@ -22,7 +22,7 @@ std::string minimize(const std::string code) {
     std::string res;
     for (auto i : emptyFiltered) res += i;
 
-    eraseRegex(res, MULTILINE_COMMENT_REGEX, findRegex(res, STRING_REGEX));
+    eraseRegex(res, MULTILINE_COMMENT_REGEX, findRegex(res, std::regex(tokenRegexMap.at(TokenType::STRING))));
 
     return res;
 }

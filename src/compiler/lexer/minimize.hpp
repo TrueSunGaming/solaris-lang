@@ -2,4 +2,4 @@
 
 #include <string>
 
-std::string minimize(const std::string code);
+std::string minimize(const std::string& code);

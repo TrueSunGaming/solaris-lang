@@ -12,9 +12,11 @@ class Lexer {
         
         std::string getActiveSubstring() const;
         void mergeTokens();
+        void mergeOperator(size_t index);
 
     public:
         std::vector<Token> tokens;
+        std::vector<std::string> errors;
         
         Lexer(std::string str);
         ~Lexer() = default;

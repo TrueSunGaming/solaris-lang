@@ -17,7 +17,9 @@ enum TokenType {
     CURLY_OPEN,
     CURLY_CLOSE,
     COMMA,
-    OPERATOR
+    OPERATOR,
+    ARRAY_TYPE,
+    OPTIONAL_TYPE
 };
 
 const std::regex MULTILINE_COMMENT_REGEX = std::regex(R"(\/\*.*?\*\/)");
@@ -28,6 +30,15 @@ const std::unordered_set<std::string> joinedOperators = {
     "*=", // mul assign
     "/=", // div assign
     "%=", // mod assign
+    "**=", // exp assign
+    "||=", // bool or assign
+    "&&=", // bool and assign
+    "^^=", // bool xor assign
+    "\?\?=", // nullish coalescing assign
+    "|=", // bitwise or assign
+    "&=", // bitwise and assign
+    "^=", // bitwise xor assign
+    "~=", // bitwise not assign
     "!=", // not equal
     ">=", // greater equal
     "<=", // less equal

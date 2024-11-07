@@ -2,6 +2,7 @@
 #include "../../universal/regex/findRegex.hpp"
 #include "../../universal/util/trim.hpp"
 #include "minimize.hpp"
+#include <iostream>
 
 Lexer::Lexer(std::string str) : str(str) {}
 
@@ -39,15 +40,31 @@ void Lexer::readAll(size_t limit) {
 
 void Lexer::mergeTokens() {
     for (size_t i = 0; i < tokens.size() - 1; i++) {
-        if (tokens[i].type != TokenType::OPERATOR) continue;
-        if (tokens[i + 1].type != TokenType::OPERATOR) continue;
-
-        const std::string joined = tokens[i].value + tokens[i + 1].value;
-        if (!joinedOperators.contains(joined)) continue;
-
-        tokens[i].value = joined;
-        tokens.erase(std::next(tokens.begin(), i + 1));
+        mergeOperator(i);
     }
+}
+
+void Lexer::mergeOperator(size_t index) {
+    if (index >= tokens.size() - 1) return;
+
+    std::string joined = "";
+    for (size_t i = index; i < tokens.size(); i++) {
+        if (tokens[i].type != TokenType::OPERATOR) break;
+        joined += tokens[i].value;
+    }
+
+    if (joined.size() < 1) return;
+    
+    tokens.erase(std::next(tokens.begin(), index + 1), std::next(tokens.begin(), index + joined.size()));
+
+    if (!joinedOperators.contains(joined)) {
+        const std::string err = "Syntax Error: Unknown operator '" + joined + "'.";
+        errors.push_back(err);
+        std::cout << err << "\n";
+        return;
+    }
+
+    tokens[index].value = joined;
 }
 
 std::vector<Token> Lexer::tokenize(const std::string& code, size_t limit) {

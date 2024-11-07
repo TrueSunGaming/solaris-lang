@@ -1,5 +1,15 @@
-# skibidi language
+# Solaris
 
+im bored lol
+
+## Feature progress
+* [x] Lexer
+* [ ] Parser
+* [ ] Compiler
+* [ ] Runtime
+* [ ] VSCode Extension
+
+## Syntax (WIP)
 Hello world
 ```
 // void by default

@@ -11,7 +11,6 @@ class Lexer {
         size_t searchPosition = 0;
         
         std::string getActiveSubstring() const;
-        void mergeTokens();
         void mergeOperator(size_t index);
 
     public:
@@ -23,6 +22,7 @@ class Lexer {
 
         bool readNext();
         void readAll(size_t limit = SIZE_MAX);
+        void mergeTokens();
 
         static std::vector<Token> tokenize(const std::string& code, size_t limit = SIZE_MAX);
 };

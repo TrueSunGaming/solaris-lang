@@ -1,5 +1,23 @@
-# skibidi language
+# Solaris
 
+im bored lol
+
+## Component progress
+* [x] Lexer
+* [ ] Parser
+* [ ] Compiler
+* [ ] Runtime
+* [ ] VSCode Extension
+* [ ] Package Manager
+
+## Files
+* `solaris.json` - Solaris config
+* `solaris-pkg-cache.json` - Solaris package cache
+* `*.sol` - Solaris source code
+* `*.solex` - Solaris bytecode
+* `*.solpkg` - Solaris package - Merged Solaris bytecode
+
+## Syntax (WIP)
 Hello world
 ```
 // void by default

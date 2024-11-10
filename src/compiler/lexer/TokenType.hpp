@@ -17,9 +17,7 @@ enum TokenType {
     CURLY_OPEN,
     CURLY_CLOSE,
     COMMA,
-    OPERATOR,
-    ARRAY_TYPE,
-    OPTIONAL_TYPE
+    OPERATOR
 };
 
 const std::regex MULTILINE_COMMENT_REGEX = std::regex(R"(\/\*.*?\*\/)");
@@ -54,17 +52,17 @@ const std::unordered_set<std::string> joinedOperators = {
 };
 
 const std::map<TokenType, std::string> tokenRegexMap = {
-    { EOL, R"(;)" },
-    { IDENTIFIER, R"([a-zA-Z_$][\w$]*)" },
-    { INTEGER, R"(\d+(e\+?\d+)?)" },
-    { FLOAT, R"((\d+\.(\d*)?(e(-|\+)?\d+(\.\d*)?)?)|(\d+(\.\d*)?e-\d+(\.\d*)?))" },
-    { STRING, R"((['"])(?:(?:\\.|[^\\])*?)\1)" },
-    { PARENTHESIS_OPEN, R"(\()" },
-    { PARENTHESIS_CLOSE, R"(\))" },
-    { SQUARE_OPEN, R"(\[)" },
-    { SQUARE_CLOSE, R"(\])" },
-    { CURLY_OPEN, R"(\{)" },
-    { CURLY_CLOSE, R"(\})" },
-    { COMMA, R"(,)" },
-    { OPERATOR, R"([+\-*/=!<>:?%&|^~])" }
+    { TokenType::EOL, R"(;)" },
+    { TokenType::IDENTIFIER, R"([a-zA-Z_$][\w$]*)" },
+    { TokenType::INTEGER, R"(\d+(e\+?\d+)?)" },
+    { TokenType::FLOAT, R"((\d+\.(\d*)?(e(-|\+)?\d+(\.\d*)?)?)|(\d+(\.\d*)?e-\d+(\.\d*)?))" },
+    { TokenType::STRING, R"((['"])(?:(?:\\.|[^\\])*?)\1)" },
+    { TokenType::PARENTHESIS_OPEN, R"(\()" },
+    { TokenType::PARENTHESIS_CLOSE, R"(\))" },
+    { TokenType::SQUARE_OPEN, R"(\[)" },
+    { TokenType::SQUARE_CLOSE, R"(\])" },
+    { TokenType::CURLY_OPEN, R"(\{)" },
+    { TokenType::CURLY_CLOSE, R"(\})" },
+    { TokenType::COMMA, R"(,)" },
+    { TokenType::OPERATOR, R"([+\-*/=!<>:?%&|^~])" }
 };

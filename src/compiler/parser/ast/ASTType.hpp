@@ -1,7 +1,8 @@
 #pragma once
 
 enum ASTType {
-    NULL,
+    ROOT,
+    NULL_VAL,
     INT,
     FLOAT,
     STRING,
@@ -44,5 +45,8 @@ enum ASTType {
     NAMESPACE_ACCESS,
     DEFINE_CLASS,
     DEFINE_METHOD,
-    DEFINE_PROPERTY
+    DEFINE_PROPERTY,
+    TYPE,
+    TYPE_MODIFIER,
+    BASE_TYPE
 };

@@ -2,13 +2,13 @@
 
 #include <vector>
 
-template <class T> class Tree {
+template <class T, class C = Tree<T>> class Tree {
     public:
         T value;
-        std::vector<Tree*> children;
+        std::vector<C&> children;
 
         Tree() = default;
-        Tree(T value, std::vector<Tree*> children = {});
+        Tree(T value, std::vector<C&> children = {});
         ~Tree() = default;
 };
 

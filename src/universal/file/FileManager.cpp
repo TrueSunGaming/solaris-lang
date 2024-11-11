@@ -3,7 +3,18 @@
 
 FileManager::FileManager(std::string path) : path(path) {}
 
+bool FileManager::exists() const {
+    std::ifstream file = std::ifstream(path);
+
+    bool res = file.good();
+    file.close();
+
+    return res;
+}
+
 std::string FileManager::read() const {
+    if (!exists()) throw std::runtime_error("File '" + path + "' does not exist");
+
     std::ifstream file = std::ifstream(path);
     
     std::string res;

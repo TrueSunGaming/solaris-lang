@@ -18,3 +18,6 @@ test
 *.lib
 *.so
 *.dll
+.ninja_deps
+.ninja_log
+build.ninja

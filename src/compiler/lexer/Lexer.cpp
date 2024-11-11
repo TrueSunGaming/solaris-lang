@@ -39,6 +39,8 @@ void Lexer::readAll(size_t limit) {
 }
 
 void Lexer::mergeTokens() {
+    if (tokens.size() < 1) return;
+
     for (size_t i = 0; i < tokens.size() - 1; i++) {
         mergeOperator(i);
     }

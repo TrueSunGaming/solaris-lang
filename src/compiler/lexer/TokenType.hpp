@@ -4,7 +4,7 @@
 #include <map>
 #include <unordered_set>
 
-enum TokenType {
+enum class TokenType {
     EOL,
     IDENTIFIER,
     INTEGER,

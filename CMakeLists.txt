@@ -21,15 +21,15 @@ set(LIB_NAME "solaris")
 set(LIB_PATH "${OUTDIR}/lib${LIB_NAME}.${LIB_EXTENSION}")
 
 add_executable(compiler)
-file(GLOB_RECURSE COMPILER_SOURCES "src/compiler/**.cpp")
+file(GLOB_RECURSE COMPILER_SOURCES "src/compiler/**.*pp")
 target_sources(compiler PRIVATE ${COMPILER_SOURCES})
 target_link_libraries(compiler ${LIB_PATH})
 
 add_executable(runtime)
-file(GLOB_RECURSE RUNTIME_SOURCES "src/runtime/**.cpp")
+file(GLOB_RECURSE RUNTIME_SOURCES "src/runtime/**.*pp")
 target_sources(runtime PRIVATE ${RUNTIME_SOURCES})
 target_link_libraries(compiler ${LIB_PATH})
 
 add_library(${LIB_NAME} SHARED)
-file(GLOB_RECURSE UNIVERSAL_SOURCES "src/universal/**.cpp")
+file(GLOB_RECURSE UNIVERSAL_SOURCES "src/universal/**.*pp")
 target_sources(${LIB_NAME} PUBLIC ${UNIVERSAL_SOURCES})

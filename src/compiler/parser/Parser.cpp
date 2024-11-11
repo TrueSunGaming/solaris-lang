@@ -107,6 +107,9 @@ bool Parser::parseNext() {
             return parseComma();
         
         default:
+            std::string error = "Syntax Error: Unknown token type: " + std::to_string((int)token.type) + " '" + token.value + "'.";
+            std::cout << error << "\n";
+            errors.push_back(error);
             return false;
     }
 }

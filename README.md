@@ -15,7 +15,6 @@ im bored lol
 * `solaris-pkg-cache.json` - Solaris package cache
 * `*.sol` - Solaris source code
 * `*.solex` - Solaris bytecode
-* `*.solpkg` - Solaris package - Merged Solaris bytecode
 
 ## Syntax (WIP)
 Hello world

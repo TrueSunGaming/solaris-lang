@@ -16,14 +16,19 @@ bool Lexer::readNext() {
     const std::string substr = getActiveSubstring();
 
     for (const auto& [k, v] : tokenRegexMap) {
-        const std::regex regex = std::regex("^\\s*" + v);
+        const std::regex regex = std::regex(R"(\s*)" + v);
+
+        //std::cout << "Looking for " << R"('\s*)" << v << "' in '" << substr << "'\n";
 
         std::smatch match;
         if (!std::regex_search(substr, match, regex)) continue;
+        if (match.position() != 0) continue;
 
         size_t len = match.length();
         std::string matchStr = substr.substr(0, len);
         trim(matchStr);
+
+        //std::cout << R"('\s*)" << v << "' matched " << len << " characters in '" << substr << "'\n";
 
         tokens.emplace_back(matchStr, k, "", 0, 0);
         searchPosition += len;
@@ -55,7 +60,7 @@ void Lexer::mergeOperator(size_t index) {
         joined += tokens[i].value;
     }
 
-    if (joined.size() < 1) return;
+    if (joined.size() < 2) return;
     
     tokens.erase(std::next(tokens.begin(), index + 1), std::next(tokens.begin(), index + joined.size()));
 

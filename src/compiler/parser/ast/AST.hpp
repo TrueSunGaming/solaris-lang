@@ -19,6 +19,10 @@ class AST {
         ~AST();
         AST(const AST&) = delete;
 
+        void addChild(AST *child);
+        void addChild(std::unique_ptr<AST> child);
+        std::unique_ptr<AST> removeChild(AST *child);
+        void transferChild(AST *child, AST& newParent);
         AST *createChild(ASTType type = ASTType::BLOCK, std::string value = "");
 
         int getID() const;

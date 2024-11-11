@@ -13,9 +13,33 @@ AST::~AST() {
     std::cout << "AST#" << id << " freed (alive count: " << aliveCount << ")\n";
 }
 
+void AST::addChild(AST *child) {
+    children.push_back(std::unique_ptr<AST>(child));
+}
+
+void AST::addChild(std::unique_ptr<AST> child) {
+    children.push_back(std::move(child));
+}
+
+std::unique_ptr<AST> AST::removeChild(AST *child) {
+    for (size_t i = 0; i < children.size(); i++) {
+        if (children[i].get() == child) {
+            std::unique_ptr<AST> res = std::move(children[i]);
+            children.erase(children.begin() + i);
+            return res;
+        }
+    }
+
+    return nullptr;
+}
+
+void AST::transferChild(AST *child, AST& newParent) {
+    newParent.addChild(std::move(removeChild(child)));
+}
+
 AST *AST::createChild(ASTType type, std::string value) {
     AST *child = new AST(type, value);
-    children.push_back(std::unique_ptr<AST>(child));
+    addChild(child);
 
     return child;
 }

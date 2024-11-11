@@ -14,6 +14,7 @@ enum class ASTType {
     DECLARE,
     DEFINE_FUNCTION,
     ARGUMENT_LIST,
+    CALL_ARGUMENTS,
     LIST,
     BLOCK,
     CONDITIONAL,
@@ -22,8 +23,6 @@ enum class ASTType {
     FOR,
     INSTANTIATE,
     DEFINE_CLASS,
-    DEFINE_METHOD,
-    DEFINE_PROPERTY,
     TYPE,
     TYPE_MODIFIER,
     BASE_TYPE

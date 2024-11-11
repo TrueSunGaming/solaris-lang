@@ -1,9 +1,15 @@
 #include "Parser.hpp"
-#include "TokenData.hpp"
+#include "ParseData.hpp"
 #include <iostream>
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens) {
     nested.push(ast.get());
+}
+
+bool Parser::pushError(std::string error, bool continueParse) {
+    std::cout << error << "\n";
+    errors.push_back(error);
+    return continueParse;
 }
 
 bool Parser::validBrackets() const {
@@ -59,7 +65,7 @@ bool Parser::tokenIsType(size_t index, std::optional<std::map<size_t, bool>> cac
             case TokenType::IDENTIFIER:
                 if (index < 1) return true;
                 if (tokens[index - 1].value == "fn") return true;
-                if (TokenData::typeModifiers.contains(tokens[index - 1].value)) return true;
+                if (ParseData::typeModifiers.contains(tokens[index - 1].value)) return true;
                 return !tokenIsType(index - 1, cache);
             
             case TokenType::SQUARE_OPEN:
@@ -86,6 +92,16 @@ void Parser::push(ASTType type, std::string value) {
     nested.push(nested.top()->createChild(type, value));
 }
 
+void Parser::wrapParent(ASTType type, std::string value) {
+    AST *parent = nested.top();
+    nested.pop();
+    AST& grandparent = *nested.top();
+
+    push(type, value);
+    grandparent.transferChild(parent, *nested.top());
+    nested.push(parent);
+}
+
 bool Parser::parseNext() {
     std::cout << "Parsing token at " << searchPosition << " '" << tokens[searchPosition].value << "'\n";
 
@@ -94,6 +110,9 @@ bool Parser::parseNext() {
     const Token& token = tokens[searchPosition];
 
     switch (token.type) {
+        case TokenType::EOL:
+            return parseEOL();
+
         case TokenType::IDENTIFIER:
             return parseIdentifier();
         
@@ -106,11 +125,26 @@ bool Parser::parseNext() {
         case TokenType::COMMA:
             return parseComma();
         
+        case TokenType::CURLY_OPEN:
+            return parseOpenCurly();
+        
+        case TokenType::CURLY_CLOSE:
+            return parseCloseCurly();
+        
+        case TokenType::OPERATOR:
+            return parseOperator();
+        
+        case TokenType::STRING:
+            return parseString();
+        
+        case TokenType::INTEGER:
+            return parseInteger();
+        
+        case TokenType::FLOAT:
+            return parseFloat();
+        
         default:
-            std::string error = "Syntax Error: Unknown token type: " + std::to_string((int)token.type) + " '" + token.value + "'.";
-            std::cout << error << "\n";
-            errors.push_back(error);
-            return false;
+            return pushError("Syntax Error: Unknown token type: " + std::to_string((int)token.type) + " '" + token.value + "'");
     }
 }
 
@@ -119,18 +153,13 @@ bool Parser::parseIdentifier() {
 
     const Token& token = tokens[searchPosition];
     AST& parent = *nested.top();
-    const bool isKeyword = TokenData::keywords.contains(token.value);
+    const bool isKeyword = ParseData::keywords.contains(token.value);
 
     if (parent.type == ASTType::TYPE) return parseType();
     if (parent.type == ASTType::DECLARE) return parseDeclaration();
 
     if (parent.type == ASTType::DEFINE_FUNCTION) {
-        if (isKeyword) {
-            std::string err = "Syntax Error: Unexpected keyword";
-            std::cout << err << "\n";
-            errors.push_back(err);
-            return false;
-        }
+        if (isKeyword) return pushError("Syntax Error: Unexpected keyword");
 
         parent.value = token.value;
         searchPosition++;
@@ -138,9 +167,20 @@ bool Parser::parseIdentifier() {
         return true;
     }
 
+    if (parent.type == ASTType::OPERATION && ParseData::accessOperators.contains(parent.value)) {
+        push(ASTType::STRING, token.value);
+        nested.pop();
+        searchPosition++;
+
+        return true;
+    }
+
     if (isKeyword) return parseKeyword();
 
-    return false;
+    push(ASTType::GET, token.value);
+    searchPosition++;
+
+    return true;
 }
 
 bool Parser::parseKeyword() {
@@ -148,14 +188,13 @@ bool Parser::parseKeyword() {
 
     const Token& token = tokens[searchPosition];
 
-    if (!TokenData::keywords.contains(token.value)) {
-        std::string err = "Syntax Error: Expected keyword, found " + token.value + " (" + std::to_string((int)token.type) + ") instead."; 
-        std::cout << err << "\n";
-        errors.push_back(err);
-        return false;
+    if (!ParseData::keywords.contains(token.value)) {
+        return pushError("Syntax Error: Expected keyword, found " + token.value + " (" + std::to_string((int)token.type) + ") instead");
     }
 
     if (token.value == "fn") return parseFunction();
+    if (token.value == "true" || token.value == "false") return parseBoolean();
+    if (token.value == "null") return parseNull();
 
     return false;
 }
@@ -191,10 +230,7 @@ bool Parser::parseType() {
     }
 
     if (typeTokens.size() < 1) {
-        std::string err = "Syntax Error: Expected type, found " + tokens[searchPosition].value + " (" + std::to_string((int)tokens[searchPosition].type) + ") instead."; 
-        std::cout << err << "\n";
-        errors.push_back(err);
-        return false;
+        pushError("Syntax Error: Expected type, found " + tokens[searchPosition].value + " (" + std::to_string((int)tokens[searchPosition].type) + ") instead");
     }
 
     searchPosition += typeTokens.size();
@@ -215,7 +251,7 @@ bool Parser::parseType() {
     }
 
     for (const auto& i : typeTokenValues) {
-        if (TokenData::baseTypes.contains(i)) type.type = ASTType::BASE_TYPE;
+        if (ParseData::baseTypes.contains(i)) type.type = ASTType::BASE_TYPE;
 
         if (i == "const" || i == "constref") {
             type.createChild(ASTType::TYPE_MODIFIER, i);
@@ -243,7 +279,7 @@ bool Parser::parseType() {
 bool Parser::parseOpenParenthesis() {
     std::cout << "Parsing open parenthesis at " << searchPosition << "\n";
 
-    AST& parent = *nested.top();
+    const AST& parent = *nested.top();
 
     if (parent.type == ASTType::DEFINE_FUNCTION) {
         push(ASTType::ARGUMENT_LIST);
@@ -253,15 +289,17 @@ bool Parser::parseOpenParenthesis() {
         return true;
     }
 
+    if (ParseData::callable.contains(parent.type)) return parseCall();
+
     return false;
 }
 
 bool Parser::parseCloseParenthesis() {
     std::cout << "Parsing close parenthesis at " << searchPosition << "\n";
 
-    AST& parent = *nested.top();
+    const AST& parent = *nested.top();
 
-    if (parent.type == ASTType::ARGUMENT_LIST) {
+    if (parent.type == ASTType::ARGUMENT_LIST || parent.type == ASTType::CALL_ARGUMENTS) {
         nested.pop();
         searchPosition++;
 
@@ -298,7 +336,7 @@ bool Parser::parseDeclaration() {
 bool Parser::parseComma() {
     std::cout << "Parsing comma at " << searchPosition << "\n";
 
-    AST& parent = *nested.top();
+    const AST& parent = *nested.top();
 
     if (parent.type == ASTType::ARGUMENT_LIST) {
         push(ASTType::DECLARE);
@@ -307,7 +345,129 @@ bool Parser::parseComma() {
         return true;
     }
 
+    if (parent.type == ASTType::CALL_ARGUMENTS) {
+        searchPosition++;
+
+        return true;
+    }
+
     return false;
+}
+
+bool Parser::parseOpenCurly() {
+    std::cout << "Parsing open curly at " << searchPosition << "\n";
+
+    return parseBlock();
+}
+
+bool Parser::parseCloseCurly() {
+    std::cout << "Parsing close curly at " << searchPosition << "\n";
+
+    const AST& parent = *nested.top();
+
+    if (parent.type == ASTType::BLOCK) {
+        nested.pop();
+
+        if (ParseData::blockParent.contains(nested.top()->type)) nested.pop();
+
+        return true;
+    }
+
+    return false;
+}
+
+bool Parser::parseBlock() {
+    std::cout << "Parsing block at " << searchPosition << "\n";
+
+    push(ASTType::BLOCK);
+    searchPosition++;
+    
+    return true;
+}
+
+bool Parser::parseOperator() {
+    std::cout << "Parsing operator at " << searchPosition << "\n";
+
+    wrapParent(ASTType::OPERATION, tokens[searchPosition].value);
+    nested.pop();
+    searchPosition++;
+
+    return true;
+}
+
+bool Parser::parseEOL() {
+    std::cout << "Parsing EOL at " << searchPosition << "\n";
+
+    while (!ParseData::eolBack.contains(nested.top()->type)) nested.pop();
+    searchPosition++;
+
+    return true;
+}
+
+bool Parser::parseCall() {
+    std::cout << "Parsing call at " << searchPosition << "\n";
+
+    wrapParent(ASTType::CALL);
+    nested.pop();
+    push(ASTType::CALL_ARGUMENTS);
+    searchPosition++;
+
+    return true;
+}
+
+bool Parser::parseString() {
+    std::cout << "Parsing string at " << searchPosition << "\n";
+
+    push(ASTType::STRING, tokens[searchPosition].value.substr(1, tokens[searchPosition].value.size() - 2));
+    nested.pop();
+
+    searchPosition++;
+
+    return true;
+}
+
+bool Parser::parseBoolean() {
+    std::cout << "Parsing boolean at " << searchPosition << "\n";
+
+    push(ASTType::BOOLEAN, tokens[searchPosition].value);
+    nested.pop();
+
+    searchPosition++;
+
+    return true;
+}
+
+bool Parser::parseFloat() {
+    std::cout << "Parsing float at " << searchPosition << "\n";
+
+    push(ASTType::FLOAT, tokens[searchPosition].value);
+    nested.pop();
+
+    searchPosition++;
+
+    return true;
+}
+
+bool Parser::parseInteger() {
+    std::cout << "Parsing integer at " << searchPosition << "\n";
+
+    push(ASTType::INTEGER, tokens[searchPosition].value);
+    nested.pop();
+
+    searchPosition++;
+
+    return true;
+}
+
+bool Parser::parseNull() {
+    std::cout << "Parsing null at " << searchPosition << "\n";
+
+    push(ASTType::NULL_VAL);
+    nested.pop();
+
+    searchPosition++;
+
+    return true;
 }
 
 void Parser::parseAll(size_t limit) {
@@ -322,5 +482,6 @@ void Parser::parseAll(size_t limit) {
 std::unique_ptr<AST> Parser::parse(std::vector<Token> tokens) {
     Parser parser = Parser(tokens);
     parser.parseAll();
+    std::cout << "parent: " << parser.nested.top()->getID() << "\n";
     return std::move(parser.ast);
 }

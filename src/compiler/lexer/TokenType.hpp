@@ -6,10 +6,10 @@
 
 enum class TokenType {
     EOL,
-    IDENTIFIER,
-    INTEGER,
     FLOAT,
+    INTEGER,
     STRING,
+    IDENTIFIER,
     PARENTHESIS_OPEN,
     PARENTHESIS_CLOSE,
     SQUARE_OPEN,
@@ -53,10 +53,10 @@ const std::unordered_set<std::string> joinedOperators = {
 
 const std::map<TokenType, std::string> tokenRegexMap = {
     { TokenType::EOL, R"(;)" },
-    { TokenType::IDENTIFIER, R"([a-zA-Z_$][\w$]*)" },
-    { TokenType::INTEGER, R"(\d+(e\+?\d+)?)" },
-    { TokenType::FLOAT, R"((\d+\.(\d*)?(e(-|\+)?\d+(\.\d*)?)?)|(\d+(\.\d*)?e-\d+(\.\d*)?))" },
+    { TokenType::FLOAT, R"(-?((\d+\.(\d*)?(e(-|\+)?\d+(\.\d*)?)?)|(\d+(\.\d*)?e-\d+(\.\d*)?)))" },
+    { TokenType::INTEGER, R"(-?\d+(e\+?\d+)?)" },
     { TokenType::STRING, R"((['"])(?:(?:\\.|[^\\])*?)\1)" },
+    { TokenType::IDENTIFIER, R"([a-zA-Z_$][\w$]*)" },
     { TokenType::PARENTHESIS_OPEN, R"(\()" },
     { TokenType::PARENTHESIS_CLOSE, R"(\))" },
     { TokenType::SQUARE_OPEN, R"(\[)" },
@@ -64,5 +64,5 @@ const std::map<TokenType, std::string> tokenRegexMap = {
     { TokenType::CURLY_OPEN, R"(\{)" },
     { TokenType::CURLY_CLOSE, R"(\})" },
     { TokenType::COMMA, R"(,)" },
-    { TokenType::OPERATOR, R"([+\-*/=!<>:?%&|^~])" }
+    { TokenType::OPERATOR, R"([+\-*/=!<>:?%&|^~.])" }
 };

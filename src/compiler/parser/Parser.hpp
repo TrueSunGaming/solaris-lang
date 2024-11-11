@@ -18,6 +18,8 @@ class Parser {
         };
 
         bool validBrackets() const;
+        bool tokenIsType(size_t index, std::optional<std::map<size_t, bool>> cache = std::nullopt) const;
+
         bool parseIdentifier();
         bool parseKeyword();
         bool parseFunction();
@@ -26,10 +28,21 @@ class Parser {
         bool parseCloseParenthesis();
         bool parseDeclaration();
         bool parseComma();
+        bool parseOpenCurly();
+        bool parseCloseCurly();
+        bool parseBlock();
+        bool parseOperator();
+        bool parseEOL();
+        bool parseCall();
+        bool parseString();
+        bool parseBoolean();
+        bool parseFloat();
+        bool parseInteger();
+        bool parseNull();
 
-        bool tokenIsType(size_t index, std::optional<std::map<size_t, bool>> cache = std::nullopt) const;
-
+        void wrapParent(ASTType type = ASTType::BLOCK, std::string value = "");
         void push(ASTType type = ASTType::BLOCK, std::string value = "");
+        bool pushError(std::string error, bool continueParse = false);
     
     public:
         std::unique_ptr<AST> ast = std::make_unique<AST>(ASTType::ROOT);

@@ -1,0 +1,10 @@
+enum class Assembly {
+    CREATE_SCOPE,
+    DESTROY_SCOPE,
+    ENTER_SCOPE,
+    LOAD,
+    COPY,
+    DEFINE_FUNCTION,
+    END_DEFINE_FUNCTION,
+    ADD_FUNCTION_ARGUMENT
+};

@@ -25,5 +25,6 @@ enum class ASTType {
     DEFINE_CLASS,
     TYPE,
     TYPE_MODIFIER,
-    BASE_TYPE
+    BASE_TYPE,
+    RAW
 };

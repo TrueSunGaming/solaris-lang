@@ -2,6 +2,7 @@
 #include "./lexer/minimize.hpp"
 #include "./lexer/Lexer.hpp"
 #include "./parser/Parser.hpp"
+#include "./generator/Generator.hpp"
 #include "../universal/file/FileManager.hpp"
 #include "../universal/regex/SubstringPosition.hpp"
 
@@ -32,4 +33,7 @@ int main() {
     std::unique_ptr<AST> ast = Parser::parse(tokens);
 
     std::cout << astToString(*ast);
+
+    Generator gen = Generator(ast.get());
+    std::cout << gen.generate();
 }

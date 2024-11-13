@@ -19,39 +19,31 @@ std::string Generator::generateRecursive(AST *ast) {
 
     switch (ast->type) {
         case ASTType::ROOT:
+        case ASTType::BLOCK:
             for (const auto& i : ast->children) res += generateRecursive(i.get());
             break;
-
-        case ASTType::BLOCK: {
-            size_t outerScope = currentScope;
-
-            res += createAndEnterScope();
-            size_t scope = currentScope;
-
-            for (const auto& i : ast->children) res += generateRecursive(i.get());
-
-            res += generateLine(Assembly::DESTROY_SCOPE, { std::to_string(scope) });
-            res += enterScope(outerScope);
-            break;
-        }
 
         case ASTType::DEFINE_FUNCTION:
             res += generateFunctionDefinition(ast);
             break;
+        
+        case ASTType::CALL:
+            res += generateFunctionCall(ast);
+            break;
+        
+        case ASTType::OPERATION:
+            res += generateOperation(ast);
+            break;
+        
+        case ASTType::STRING:
+            res += generateLine(Assembly::PUSH_TEMP, { "string", "\"" + ast->value + "\"" });
+            break;
+        
+        case ASTType::GET:
+            res += generateLine(Assembly::PUSH_TEMP, { "?", ast->value });
+            break;
     }
 
-    return res;
-}
-
-std::string Generator::enterScope(size_t id) {
-    std::string res = generateLine(Assembly::ENTER_SCOPE, { std::to_string(id) });
-    currentScope = id;
-    return res;
-}
-
-std::string Generator::createAndEnterScope() {
-    std::string res = generateLine(Assembly::CREATE_SCOPE, { std::to_string(nextScope++) });
-    res += enterScope(nextScope - 1);
     return res;
 }
 
@@ -77,6 +69,42 @@ std::string Generator::generateFunctionDefinition(AST *ast) {
 
         res += generateLine(Assembly::ADD_FUNCTION_ARGUMENT, args);
     }
+
+    return res;
+}
+
+std::string Generator::generateFunctionCall(AST *ast) {
+    std::string res = "";
+
+    std::string identifier = ast->value;
+    std::vector<std::unique_ptr<AST>>& argAST = ast->children[1]->children;
+    bool usingTemp = !identifier.size();
+
+    std::vector<std::string> args = { usingTemp ? "%tmp0" : identifier };
+    
+    for (size_t i = 0; i < argAST.size(); i++) {
+        res += generateRecursive(argAST[i].get());
+        args.push_back("%tmp" + std::to_string(argAST.size() - i + size_t(usingTemp) - 1));
+    }
+
+    if (usingTemp) res += generateRecursive(ast->children[0].get());
+
+    res += generateLine(Assembly::CALL, args);
+    if (usingTemp || argAST.size()) res += generateLine(Assembly::POP_TEMP, { std::to_string(size_t(usingTemp) + argAST.size()), "0" });
+
+    return res;
+}
+
+std::string Generator::generateOperation(AST *ast) {
+    std::string res = "";
+
+    res += generateRecursive(ast->children[0].get());
+    res += generateRecursive(ast->children[1].get());
+
+    if (ast->value == "::") res += generateLine(Assembly::NAMESPACE_ACCESS, { "%tmp1", "%tmp0" });
+    else res += generateLine(Assembly::PUSH_TEMP, { "null", "null" });
+
+    res += generateLine(Assembly::POP_TEMP, { "2", "1" });
 
     return res;
 }

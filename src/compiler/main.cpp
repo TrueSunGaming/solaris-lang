@@ -24,16 +24,20 @@ std::string astToString(const AST& ast, int depth = 0) {
     return res;
 }
 
-int main() {
-    FileManager file = FileManager("test.sol");
-    std::vector<Token> tokens = Lexer::tokenize(file.read());
+int main(int argc, char *argv[]) {
+    if (argc < 2) throw std::runtime_error("No input file specified");
+    std::string filename = argv[1];
+    if (filename.ends_with(".sol")) filename = filename.substr(0, filename.size() - 4);
 
+    FileManager file = FileManager(filename + ".sol");
+
+    std::vector<Token> tokens = Lexer::tokenize(file.read());
     for (const auto& i : tokens) std::cout << i.value << " (" << (int)i.type << ")\n";
 
     std::unique_ptr<AST> ast = Parser::parse(tokens);
-
     std::cout << astToString(*ast);
 
-    Generator gen = Generator(ast.get());
-    std::cout << gen.generate();
+    std::string assembly = Generator::generate(ast.get());
+    FileManager output = FileManager(filename + ".solex");
+    output.write(assembly);
 }

@@ -11,7 +11,7 @@ std::string Generator::generateLine(Assembly type, const std::vector<std::string
 }
 
 std::string Generator::generateType(std::string type) {
-    return ParseData::baseTypes.contains(type) ? type : "%TYPE_" + type + "%";
+    return ParseData::baseTypes.contains(type) ? type : "%type_" + type ;
 }
 
 std::string Generator::generateRecursive(AST *ast) {
@@ -43,6 +43,8 @@ std::string Generator::generateRecursive(AST *ast) {
             res += generateLine(Assembly::PUSH_TEMP, { "?", ast->value });
             break;
     }
+
+    if (ast->type == ASTType::ROOT) res += generateLine(Assembly::CALL, { "main" });
 
     return res;
 }
@@ -109,6 +111,11 @@ std::string Generator::generateOperation(AST *ast) {
     return res;
 }
 
-std::string Generator::generate() {
+std::string Generator::generateRoot() {
     return generateRecursive(ast);
+}
+
+std::string Generator::generate(AST *ast) {
+    Generator gen = Generator(ast);
+    return gen.generateRoot();
 }

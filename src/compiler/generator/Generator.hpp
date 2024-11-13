@@ -23,5 +23,6 @@ class Generator {
         Generator(AST *ast);
         ~Generator() = default;
 
-        std::string generate();
+        static std::string generate(AST *ast);
+        std::string generateRoot();
 };

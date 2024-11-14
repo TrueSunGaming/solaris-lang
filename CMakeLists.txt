@@ -28,7 +28,7 @@ target_link_libraries(compiler ${LIB_PATH})
 add_executable(runtime)
 file(GLOB_RECURSE RUNTIME_SOURCES "src/runtime/**.*pp")
 target_sources(runtime PRIVATE ${RUNTIME_SOURCES})
-target_link_libraries(compiler ${LIB_PATH})
+target_link_libraries(runtime ${LIB_PATH})
 
 add_library(${LIB_NAME} SHARED)
 file(GLOB_RECURSE UNIVERSAL_SOURCES "src/universal/**.*pp")

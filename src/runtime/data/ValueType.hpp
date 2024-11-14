@@ -9,6 +9,5 @@ enum class ValueType {
     OBJECT,
     ARRAY,
     FUNCTION,
-    CLASS,
-    BINARY_FUNCTION
+    CLASS
 };

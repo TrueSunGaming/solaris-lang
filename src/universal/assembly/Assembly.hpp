@@ -7,5 +7,6 @@ enum class Assembly {
     ADD_FUNCTION_ARGUMENT,
     CALL,
     RETURN,
-    NAMESPACE_ACCESS
+    NAMESPACE_ACCESS,
+    ASSEMBLY_MAX
 };

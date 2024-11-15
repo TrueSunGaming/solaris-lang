@@ -4,9 +4,11 @@
 #include <tuple>
 #include <string>
 #include <stack>
+#include <optional>
 #include "../../universal/assembly/Assembly.hpp"
 #include "../data/Object.hpp"
 #include "FunctionReturnState.hpp"
+#include "../data/scope/Scope.hpp"
 
 class RuntimeState {
     private:
@@ -15,6 +17,9 @@ class RuntimeState {
         Instructions instructions;
         std::stack<FunctionReturnState> returnStack;
         size_t line = 0;
+        Scope globalScope;
+        std::optional<Scope> activeScope;
+        std::vector<std::unique_ptr<Scope>> scopes;
 
         static Instructions load(const std::string& filename);
     

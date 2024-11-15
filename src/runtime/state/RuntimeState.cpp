@@ -61,3 +61,13 @@ void RuntimeState::ret() {
 void RuntimeState::pushReturn(size_t functionID) {
     returnStack.push({ functionID, line });
 }
+
+Object *RuntimeState::getReturnObject() {
+    size_t id = returnStack.top().functionID;
+
+    Scope *scope = activeScope ? activeScope->findFunction(id, &globalScope) : &globalScope;
+    if (!scope) return nullptr;
+
+    Function *func = scope->getFunction(id);
+    return func ? func->returnObj : nullptr;
+}

@@ -8,5 +8,5 @@ class SolarisFunction : public Function {
         size_t id;
         size_t startLine;
 
-        std::unique_ptr<Object> call(RuntimeState& runtime, std::vector<Object *> args) const override;
+        void call(RuntimeState& runtime, std::vector<Object *> args) const override;
 };

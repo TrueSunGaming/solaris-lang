@@ -44,3 +44,20 @@ RuntimeState::Instructions RuntimeState::load(const std::string& filename) {
 }
 
 RuntimeState::RuntimeState(const std::string& filename) : instructions(load(filename)) {}
+
+void RuntimeState::jump(size_t line) {
+    line = std::min(line, instructions.size() - 1);
+}
+
+void RuntimeState::ret() {
+    if (!returnStack.size()) return;
+
+    FunctionReturnState data = returnStack.top();
+    returnStack.pop();
+
+    jump(data.line);
+}
+
+void RuntimeState::pushReturn(size_t functionID) {
+    returnStack.push({ functionID, line });
+}

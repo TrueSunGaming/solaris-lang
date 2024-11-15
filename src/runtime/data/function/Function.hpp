@@ -7,5 +7,9 @@
 
 class Function {
     public:
-        virtual std::unique_ptr<Object> call(RuntimeState& runtime, std::vector<Object *> args) const = 0;
+        Object *returnObj = nullptr;
+
+        Function(Object *returnObj);
+
+        virtual void call(RuntimeState& runtime, std::vector<Object *> args) const = 0;
 };

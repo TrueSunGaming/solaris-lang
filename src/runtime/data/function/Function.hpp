@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 #include "../Object.hpp"
-#include "../../state/RuntimeState.hpp"
+#include "../../state/AbstractRuntimeState.hpp"
 
 class Function {
     public:
@@ -11,5 +11,5 @@ class Function {
 
         Function(Object *returnObj);
 
-        virtual void call(RuntimeState& runtime, std::vector<Object *> args) const = 0;
+        virtual void call(AbstractRuntimeState& runtime, std::vector<Object *> args) const = 0;
 };

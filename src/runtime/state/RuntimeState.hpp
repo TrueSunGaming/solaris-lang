@@ -6,28 +6,30 @@
 #include <stack>
 #include <optional>
 #include "../../universal/assembly/Assembly.hpp"
-#include "../data/Object.hpp"
 #include "FunctionReturnState.hpp"
 #include "../data/scope/Scope.hpp"
+#include "AbstractRuntimeState.hpp"
 
-class RuntimeState {
+class RuntimeState : public AbstractRuntimeState {
     private:
         typedef std::vector<std::tuple<Assembly, std::vector<std::string>>> Instructions;
 
         Instructions instructions;
         std::stack<FunctionReturnState> returnStack;
         size_t line = 0;
-        Scope globalScope;
-        std::optional<Scope> activeScope;
+        std::unique_ptr<Scope> globalScope;
+        Scope *activeScope;
         std::vector<std::unique_ptr<Scope>> scopes;
 
         static Instructions load(const std::string& filename);
+        std::vector<Object *> parseArgs(std::vector<std::string> args) const;
     
     public:
         RuntimeState(const std::string& filename);
 
-        void jump(size_t line);
-        void ret();
-        void pushReturn(size_t functionID);
-        Object *getReturnObject();
+        void step() override;
+        void jump(size_t line) override;
+        void ret() override;
+        void pushReturn(size_t functionID) override;
+        Object *getReturnObject() override;
 };

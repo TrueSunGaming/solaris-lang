@@ -18,15 +18,22 @@ class RuntimeState : public AbstractRuntimeState {
         std::stack<FunctionReturnState> returnStack;
         size_t line = 0;
         std::unique_ptr<Scope> globalScope;
-        Scope *activeScope;
+        Scope *activeScope = nullptr;
         std::vector<std::unique_ptr<Scope>> scopes;
+        std::vector<Object *> tempStack;
 
         static Instructions load(const std::string& filename);
-        std::vector<Object *> parseArgs(std::vector<std::string> args) const;
+        std::vector<Object *> parseArgs(std::vector<std::string> args);
+
+        Object *getObject(std::string name);
+        Function *getFunction(size_t id);
+        Function *getFunction(std::string name);
+        Scope *getCurrentScope();
     
     public:
         RuntimeState(const std::string& filename);
 
+        size_t getLine() const override;
         void step() override;
         void jump(size_t line) override;
         void ret() override;

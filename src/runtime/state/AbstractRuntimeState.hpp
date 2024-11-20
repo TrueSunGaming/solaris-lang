@@ -4,6 +4,7 @@
 
 class AbstractRuntimeState {
     public:
+        virtual size_t getLine() const = 0;
         virtual void step() = 0;
         virtual void jump(size_t line) = 0;
         virtual void ret() = 0;

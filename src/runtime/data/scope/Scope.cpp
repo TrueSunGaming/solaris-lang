@@ -18,7 +18,7 @@ Function *Scope::getFunction(std::string name) {
 Scope *Scope::findMember(std::string name, Scope *globalScope) {
     if (members.contains(name)) return this;
     if (parent) return parent->findMember(name, globalScope);
-    if (globalScope) return globalScope->findMember(name);
+    if (globalScope && globalScope != this) return globalScope->findMember(name);
 
     return nullptr;
 }
@@ -26,7 +26,7 @@ Scope *Scope::findMember(std::string name, Scope *globalScope) {
 Scope *Scope::findFunction(size_t id, Scope *globalScope) {
     if (functions.contains(id)) return this;
     if (parent) return parent->findFunction(id, globalScope);
-    if (globalScope) return globalScope->findFunction(id);
+    if (globalScope && globalScope != this) return globalScope->findFunction(id);
 
     return nullptr;
 }
@@ -34,7 +34,7 @@ Scope *Scope::findFunction(size_t id, Scope *globalScope) {
 Scope *Scope::findFunction(std::string name, Scope *globalScope) {
     if (functionIDs.contains(name)) return this;
     if (parent) return parent->findFunction(name, globalScope);
-    if (globalScope) return globalScope->findFunction(name);
+    if (globalScope && globalScope != this) return globalScope->findFunction(name);
 
     return nullptr;
 }

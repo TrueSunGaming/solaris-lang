@@ -1,6 +1,7 @@
 #include "RuntimeState.hpp"
 #include "../../universal/file/FileManager.hpp"
 #include "../../universal/util/split.hpp"
+#include "../data/function/SolarisFunction.hpp"
 #include <iostream>
 
 RuntimeState::Instructions RuntimeState::load(const std::string& filename) {
@@ -43,20 +44,47 @@ RuntimeState::Instructions RuntimeState::load(const std::string& filename) {
     return res;
 }
 
-RuntimeState::RuntimeState(const std::string& filename) : instructions(load(filename)) {}
+RuntimeState::RuntimeState(const std::string& filename) :
+    instructions(load(filename)),
+    globalScope(std::make_unique<Scope>()) {}
 
-std::vector<Object *> RuntimeState::parseArgs(std::vector<std::string> args) const {
+Object *RuntimeState::getObject(std::string name) {
+    return getCurrentScope()->findAndGetMember(name, globalScope.get());
+}
+
+Function *RuntimeState::getFunction(size_t id) {
+    return getCurrentScope()->findAndGetFunction(id, globalScope.get());
+}
+
+Function *RuntimeState::getFunction(std::string name) {
+    return getCurrentScope()->findAndGetFunction(name, globalScope.get());
+}
+
+Scope *RuntimeState::getCurrentScope() {
+    return activeScope ? activeScope : globalScope.get();
+}
+
+std::vector<Object *> RuntimeState::parseArgs(std::vector<std::string> args) {
     std::vector<Object *> res;
     for (const auto& i : args) {
-        res.push_back(activeScope->findAndGetMember(i, globalScope.get()));
+        res.push_back(getObject(i));
         if (!res.back()) throw std::runtime_error("Variable '" + i + "' does not exist");
     }
 
     return res;
 }
 
+size_t RuntimeState::getLine() const {
+    return line;
+}
+
 void RuntimeState::step() {
-    if (line >= instructions.size()) return exit(0);
+    std::cout << "Running line " << line << "\n";
+    
+    if (line >= instructions.size()) {
+        std::cout << "Execution complete\n";
+        return exit(0);
+    }
 
     Assembly instruction = std::get<0>(instructions[line]);
     std::vector<std::string> args = std::get<1>(instructions[line]);
@@ -65,10 +93,31 @@ void RuntimeState::step() {
         case Assembly::CALL: {
             std::string functionName = args[0];
             
-            Function *function = activeScope->findAndGetFunction(functionName, globalScope.get());
-            if (!function) throw std::runtime_error("Function '" + functionName + "' does not exist");
+            Function *fn = getFunction(functionName);
+            if (!fn) throw std::runtime_error("Function '" + functionName + "' does not exist");
 
-            function->call(*this, parseArgs(args));
+            fn->call(this, parseArgs(std::vector(args.begin() + 1, args.end())));
+            break;
+        }
+
+        case Assembly::DEFINE_FUNCTION: {
+            SolarisFunction *fn = new SolarisFunction();
+            fn->startLine = line;
+            fn->id = std::stoull(args[1]);
+            fn->name = args[0];
+            getCurrentScope()->setFunction(fn->id, fn->name, fn);
+            
+            while (std::get<0>(instructions[line]) != Assembly::END_DEFINE_FUNCTION) {
+                if (line > instructions.size() - 1) throw std::runtime_error("Assembly Syntax Error: Unexpected EOF while defining function");
+                line++;
+            }
+
+            break;
+        }
+
+        case Assembly::ADD_FUNCTION_ARGUMENT: {
+            getFunction(std::stoull(args[0]))->args.emplace_back(args[1], ValueType::NULL_VAL);
+
             break;
         }
 
@@ -80,7 +129,7 @@ void RuntimeState::step() {
 }
 
 void RuntimeState::jump(size_t line) {
-    line = std::min(line, instructions.size() - 1);
+    this->line = std::min(line, instructions.size() - 1);
 }
 
 void RuntimeState::ret() {
@@ -97,11 +146,8 @@ void RuntimeState::pushReturn(size_t functionID) {
 }
 
 Object *RuntimeState::getReturnObject() {
-    size_t id = returnStack.top().functionID;
+    if (returnStack.empty()) return nullptr;
 
-    Scope *scope = activeScope ? activeScope->findFunction(id, globalScope.get()) : globalScope.get();
-    if (!scope) return nullptr;
-
-    Function *func = scope->getFunction(id);
-    return func ? func->returnObj : nullptr;
+    Function *fn = getFunction(returnStack.top().functionID);
+    return fn ? fn->returnObj : nullptr;
 }

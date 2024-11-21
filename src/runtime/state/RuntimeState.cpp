@@ -52,12 +52,8 @@ Object *RuntimeState::getObject(std::string name) {
     return getCurrentScope()->findAndGetMember(name, globalScope.get());
 }
 
-Function *RuntimeState::getFunction(size_t id) {
+SolarisFunction *RuntimeState::getFunction(size_t id) {
     return getCurrentScope()->findAndGetFunction(id, globalScope.get());
-}
-
-Function *RuntimeState::getFunction(std::string name) {
-    return getCurrentScope()->findAndGetFunction(name, globalScope.get());
 }
 
 Scope *RuntimeState::getCurrentScope() {
@@ -93,7 +89,7 @@ void RuntimeState::step() {
         case Assembly::CALL: {
             std::string functionName = args[0];
             
-            Function *fn = getFunction(functionName);
+            Function *fn = (Function *)getObject(functionName);
             if (!fn) throw std::runtime_error("Function '" + functionName + "' does not exist");
 
             fn->call(this, parseArgs(std::vector(args.begin() + 1, args.end())));
@@ -105,7 +101,8 @@ void RuntimeState::step() {
             fn->startLine = line;
             fn->id = std::stoull(args[1]);
             fn->name = args[0];
-            getCurrentScope()->setFunction(fn->id, fn->name, fn);
+            getCurrentScope()->setMember(fn->name, fn);
+            std::cout << "Function defined with id " + args[1] + "\n";
             
             while (std::get<0>(instructions[line]) != Assembly::END_DEFINE_FUNCTION) {
                 if (line > instructions.size() - 1) throw std::runtime_error("Assembly Syntax Error: Unexpected EOF while defining function");
@@ -116,10 +113,16 @@ void RuntimeState::step() {
         }
 
         case Assembly::ADD_FUNCTION_ARGUMENT: {
-            getFunction(std::stoull(args[0]))->args.emplace_back(args[1], ValueType::NULL_VAL);
+            SolarisFunction *fn = getFunction(std::stoull(args[0]));
+            if (!fn) throw std::runtime_error("Function with id " + args[0] + " does not exist");
 
+            fn->args.emplace_back(args[1], ValueType::NULL_VAL);
             break;
         }
+
+        case Assembly::END_DEFINE_FUNCTION:
+            ret();
+            break;
 
         default:
             throw std::runtime_error("Unknown instruction " + std::to_string((int)instruction));

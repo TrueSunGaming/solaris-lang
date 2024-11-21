@@ -26,8 +26,7 @@ class RuntimeState : public AbstractRuntimeState {
         std::vector<Object *> parseArgs(std::vector<std::string> args);
 
         Object *getObject(std::string name);
-        Function *getFunction(size_t id);
-        Function *getFunction(std::string name);
+        SolarisFunction *getFunction(size_t id);
         Scope *getCurrentScope();
     
     public:

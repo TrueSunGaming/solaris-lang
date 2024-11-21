@@ -6,7 +6,7 @@
 #include "../../state/AbstractRuntimeState.hpp"
 #include "FunctionArgument.hpp"
 
-class Function {
+class Function : public Object {
     public:
         Object *returnObj = nullptr;
         std::vector<FunctionArgument> args;

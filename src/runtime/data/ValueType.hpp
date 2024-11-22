@@ -9,5 +9,6 @@ enum class ValueType {
     OBJECT,
     ARRAY,
     FUNCTION,
-    CLASS
+    CLASS,
+    NAMESPACE
 };

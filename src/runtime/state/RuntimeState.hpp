@@ -5,12 +5,13 @@
 #include <string>
 #include <stack>
 #include <optional>
+#include <map>
 #include "../../universal/assembly/Assembly.hpp"
 #include "FunctionReturnState.hpp"
 #include "../data/scope/Scope.hpp"
-#include "AbstractRuntimeState.hpp"
+#include "AbstractFunctionCaller.hpp"
 
-class RuntimeState : public AbstractRuntimeState {
+class RuntimeState : public AbstractFunctionCaller {
     private:
         typedef std::vector<std::tuple<Assembly, std::vector<std::string>>> Instructions;
 
@@ -21,21 +22,30 @@ class RuntimeState : public AbstractRuntimeState {
         Scope *activeScope = nullptr;
         std::vector<std::unique_ptr<Scope>> scopes;
         std::vector<Object *> tempStack;
+        std::map<size_t, std::unique_ptr<Object>> tempStorage;
 
         static Instructions load(const std::string& filename);
         std::vector<Object *> parseArgs(std::vector<std::string> args);
 
-        Object *getObject(std::string name);
-        SolarisFunction *getFunction(size_t id);
-        Scope *getCurrentScope();
+        std::unique_ptr<Object> createObject(const std::string& val);
     
     public:
         RuntimeState(const std::string& filename);
 
-        size_t getLine() const override;
-        void step() override;
+        size_t getLine() const;
+        void step();
         void jump(size_t line) override;
-        void ret() override;
+        void ret();
         void pushReturn(size_t functionID) override;
-        Object *getReturnObject() override;
+        void pushTemp(Object *obj);
+        void moveTemp(Object *obj);
+        void moveTemp(std::unique_ptr<Object> obj);
+        void popTemp();
+        Object *getTemp(size_t idx);
+        Object *getReturnObject();
+        Object *getObject(const std::string& name);
+        Scope *getGlobalScope();
+        Scope *getCurrentScope();
+
+        SolarisFunction *getFunction(size_t id);
 };

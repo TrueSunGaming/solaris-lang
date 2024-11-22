@@ -14,6 +14,8 @@ class Object {
         std::vector<std::unique_ptr<Object>> iterableMembers = {};
 
     public:
+        Object() = default;
+        Object(ValueType type);
         ~Object();
 
         void free();

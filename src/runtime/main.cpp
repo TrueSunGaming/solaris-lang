@@ -6,5 +6,9 @@ int main(int argc, char *argv[]) {
 
     RuntimeState runtime = RuntimeState(std::string(argv[1]).ends_with(".solex") ? argv[1] : std::string(argv[1]) + ".solex");
 
+    Object *stdlib = new Object(ValueType::NAMESPACE);
+
+    runtime.getGlobalScope()->setMember("std", stdlib);
+
     while (true) runtime.step();
 }

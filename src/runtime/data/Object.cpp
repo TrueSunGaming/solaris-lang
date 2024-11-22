@@ -1,6 +1,8 @@
 #include "Object.hpp"
 #include <iostream>
 
+Object::Object(ValueType type) : type(type) {}
+
 Object::~Object() {
     free();
 }
@@ -14,11 +16,11 @@ void Object::free() {
             break;
         
         case ValueType::INTEGER:
-            delete static_cast<int *>(raw);
+            delete static_cast<int64_t *>(raw);
             break;
         
         case ValueType::FLOAT:
-            delete static_cast<float *>(raw);
+            delete static_cast<double *>(raw);
             break;
         
         case ValueType::BOOLEAN:
@@ -78,7 +80,7 @@ ValueType Object::getType() const {
 
 void Object::setType(ValueType type, bool reset) {
     this->type = type;
-    if (reset) resetValue(false);
+    if (reset) resetValue();
 }
 
 std::unordered_map<std::string, std::unique_ptr<Object>>& Object::getMembers() {

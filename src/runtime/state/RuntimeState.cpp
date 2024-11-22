@@ -2,7 +2,11 @@
 #include "../../universal/file/FileManager.hpp"
 #include "../../universal/util/split.hpp"
 #include "../data/function/SolarisFunction.hpp"
+#include "../../universal/tokens/TokenType.hpp"
+#include "../../universal/util/scientificToNumber.hpp"
 #include <iostream>
+#include <regex>
+#include <sstream>
 
 RuntimeState::Instructions RuntimeState::load(const std::string& filename) {
     FileManager file = FileManager(filename);
@@ -48,8 +52,34 @@ RuntimeState::RuntimeState(const std::string& filename) :
     instructions(load(filename)),
     globalScope(std::make_unique<Scope>()) {}
 
-Object *RuntimeState::getObject(std::string name) {
+Object *RuntimeState::getObject(const std::string& name) {
+    if (name.starts_with("%tmp")) return getTemp(std::stoull(name.substr(4)));
     return getCurrentScope()->findAndGetMember(name, globalScope.get());
+}
+
+std::unique_ptr<Object> RuntimeState::createObject(const std::string& val) {
+    std::unique_ptr<Object> obj = std::make_unique<Object>();
+
+    if (val.starts_with("\"") || val.starts_with("'")) {
+        obj->setType(ValueType::STRING);
+        obj->setValue(new std::string(val.substr(1, val.size() - 1)));
+
+        return std::move(obj);
+    }
+
+    if (std::regex_match(val, std::regex(tokenRegexMap.at(TokenType::FLOAT)))) {
+        obj->setType(ValueType::FLOAT);
+        obj->setValue(new double(scientificToNumber<double>(val)));
+        return std::move(obj);
+    }
+
+    if (std::regex_match(val, std::regex(tokenRegexMap.at(TokenType::INTEGER)))) {
+        obj->setType(ValueType::INTEGER);
+        obj->setValue(new int64_t(scientificToNumber<int64_t>(val)));
+        return std::move(obj);
+    }
+
+    throw std::runtime_error("Failed to create object from value: " + val);
 }
 
 SolarisFunction *RuntimeState::getFunction(size_t id) {
@@ -58,6 +88,10 @@ SolarisFunction *RuntimeState::getFunction(size_t id) {
 
 Scope *RuntimeState::getCurrentScope() {
     return activeScope ? activeScope : globalScope.get();
+}
+
+Scope *RuntimeState::getGlobalScope() {
+    return globalScope.get();
 }
 
 std::vector<Object *> RuntimeState::parseArgs(std::vector<std::string> args) {
@@ -123,6 +157,17 @@ void RuntimeState::step() {
         case Assembly::END_DEFINE_FUNCTION:
             ret();
             break;
+        
+        case Assembly::PUSH_TEMP: {
+            Object *obj = getObject(args[0]);
+            if (obj) {
+                pushTemp(obj);
+                break;
+            }
+
+            moveTemp(createObject(args[0]));
+            break;
+        }
 
         default:
             throw std::runtime_error("Unknown instruction " + std::to_string((int)instruction));
@@ -146,6 +191,29 @@ void RuntimeState::ret() {
 
 void RuntimeState::pushReturn(size_t functionID) {
     returnStack.push({ functionID, line });
+}
+
+void RuntimeState::pushTemp(Object *obj) {
+    tempStack.push_back(obj);
+}
+
+void RuntimeState::moveTemp(Object *obj) {
+    moveTemp(std::unique_ptr<Object>(obj));
+}
+
+void RuntimeState::moveTemp(std::unique_ptr<Object> obj) {
+    pushTemp(obj.get());
+    tempStorage[tempStack.size() - 1] = std::move(obj);
+}
+
+void RuntimeState::popTemp() {
+    size_t len = tempStack.size();
+    if (len > 0 && tempStorage.contains(len - 1)) tempStorage.erase(len - 1);
+    tempStack.pop_back();
+}
+
+Object *RuntimeState::getTemp(size_t idx) {
+    return tempStack[tempStack.size() - idx - 1];
 }
 
 Object *RuntimeState::getReturnObject() {

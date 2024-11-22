@@ -5,7 +5,7 @@
 #include "../../universal/regex/eraseRegex.hpp"
 #include "../../universal/regex/findRegex.hpp"
 #include "removeComments.hpp"
-#include "TokenType.hpp"
+#include "../../universal/tokens/TokenType.hpp"
 
 std::string minimize(const std::string& code) {
     std::vector<std::string> lines = split(code, "\n");

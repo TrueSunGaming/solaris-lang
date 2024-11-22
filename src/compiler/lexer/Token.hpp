@@ -1,17 +1,17 @@
 #pragma once
 
 #include <string>
-#include "TokenType.hpp"
+#include "../../universal/tokens/TokenType.hpp"
 
 class Token {
     public:
         std::string value;
-        enum TokenType type;
+        TokenType type = TokenType::EOL;
         std::string filepath;
         int line;
         int column;
 
         Token() = default;
-        Token(std::string value, enum TokenType type, std::string filepath, int line, int column);
+        Token(const std::string& value, TokenType type, std::string filepath, int line, int column);
         ~Token() = default;
 };

@@ -36,11 +36,11 @@ std::string Generator::generateRecursive(AST *ast) {
             break;
         
         case ASTType::STRING:
-            res += generateLine(Assembly::PUSH_TEMP, { "string", "\"" + ast->value + "\"" });
+            res += generateLine(Assembly::PUSH_TEMP, { "\"" + ast->value + "\"" });
             break;
         
         case ASTType::GET:
-            res += generateLine(Assembly::PUSH_TEMP, { "?", ast->value });
+            res += generateLine(Assembly::PUSH_TEMP, { ast->value });
             break;
     }
 
@@ -104,7 +104,7 @@ std::string Generator::generateOperation(AST *ast) {
     res += generateRecursive(ast->children[1].get());
 
     if (ast->value == "::") res += generateLine(Assembly::NAMESPACE_ACCESS, { "%tmp1", "%tmp0" });
-    else res += generateLine(Assembly::PUSH_TEMP, { "null", "null" });
+    else res += generateLine(Assembly::PUSH_TEMP, { "null" });
 
     res += generateLine(Assembly::POP_TEMP, { "2", "1" });
 

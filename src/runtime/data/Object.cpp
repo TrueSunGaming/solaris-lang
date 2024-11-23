@@ -46,6 +46,11 @@ template <class T> T Object::getValueAs() const {
     return *static_cast<T *>(raw);
 }
 
+template int64_t Object::getValueAs<int64_t>() const;
+template double Object::getValueAs<double>() const;
+template std::string Object::getValueAs<std::string>() const;
+template bool Object::getValueAs<bool>() const;
+
 void Object::setValue(void *value, bool freeOld) {
     if (freeOld) free();
     else std::cout << "POSSIBLE MEMORY LEAK: Value was replaced but not freed!!!\n";

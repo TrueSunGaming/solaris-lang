@@ -62,7 +62,7 @@ std::unique_ptr<Object> RuntimeState::createObject(const std::string& val) {
 
     if (val.starts_with("\"") || val.starts_with("'")) {
         obj->setType(ValueType::STRING);
-        obj->setValue(new std::string(val.substr(1, val.size() - 1)));
+        obj->setValue(new std::string(val.substr(1, val.size() - 2)));
 
         return std::move(obj);
     }
@@ -167,6 +167,20 @@ void RuntimeState::step() {
 
             moveTemp(createObject(args[0]));
             break;
+        }
+
+        case Assembly::NAMESPACE_ACCESS: {
+            Object *ns = getObject(args[0]);
+            if (!ns) throw std::runtime_error("Could not get namespace " + args[0]);
+
+            Object *name = getObject(args[1]);
+            if (!name || name->getType() != ValueType::STRING) throw std::runtime_error("Could not get name from " + args[1]);
+            
+            std::unordered_map<std::string, std::unique_ptr<Object>>& members = ns->getMembers();
+            std::string memberName = name->getValueAs<std::string>();
+            if (!members.contains(memberName)) throw std::runtime_error("Namespace " + args[0] + " does not contain member " + memberName);
+
+            pushTemp(members.at(args[1]).get());
         }
 
         default:

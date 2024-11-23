@@ -18,6 +18,7 @@ class Generator {
         std::string generateFunctionDefinition(AST *ast);
         std::string generateFunctionCall(AST *ast);
         std::string generateOperation(AST *ast);
+        std::string generateNamespaceAccess(AST *ast);
     
     public:
         Generator(AST *ast);

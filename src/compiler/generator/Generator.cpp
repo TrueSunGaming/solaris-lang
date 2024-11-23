@@ -98,15 +98,26 @@ std::string Generator::generateFunctionCall(AST *ast) {
 }
 
 std::string Generator::generateOperation(AST *ast) {
+    if (ast->value == "::") return generateNamespaceAccess(ast);
+
     std::string res = "";
 
     res += generateRecursive(ast->children[0].get());
     res += generateRecursive(ast->children[1].get());
 
-    if (ast->value == "::") res += generateLine(Assembly::NAMESPACE_ACCESS, { "%tmp1", "%tmp0" });
-    else res += generateLine(Assembly::PUSH_TEMP, { "null" });
+    res += generateLine(Assembly::PUSH_TEMP, { "null" });
 
     res += generateLine(Assembly::POP_TEMP, { "2", "1" });
+
+    return res;
+}
+
+std::string Generator::generateNamespaceAccess(AST *ast) {
+    if (ast->children.size() < 2) throw std::runtime_error("Namespace access must have at least two arguments");
+
+    std::string res = generateRecursive(ast->children[0].get());
+    res += generateLine(Assembly::NAMESPACE_ACCESS, { "%tmp0", "\"" + ast->children[1]->value + "\"" });
+    res += generateLine(Assembly::POP_TEMP, { "1", "1" });
 
     return res;
 }

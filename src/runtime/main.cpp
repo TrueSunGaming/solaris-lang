@@ -1,5 +1,8 @@
 #include "state/RuntimeState.hpp"
+#include "data/function/CompiledFunction.hpp"
+#include "stdlib/println.hpp"
 #include <stdexcept>
+#include <iostream>
 
 int main(int argc, char *argv[]) {
     if (argc < 2) throw std::runtime_error("Please provide an assembly file as an argument");
@@ -9,6 +12,7 @@ int main(int argc, char *argv[]) {
     Object *stdlib = new Object(ValueType::NAMESPACE);
 
     runtime.getGlobalScope()->setMember("std", stdlib);
+    stdlib->getMembers()["println"] = std::make_unique<CompiledFunction>(SolarisStdlib::println);
 
     while (true) runtime.step();
 }

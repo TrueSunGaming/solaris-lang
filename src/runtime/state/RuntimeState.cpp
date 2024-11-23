@@ -109,12 +109,7 @@ size_t RuntimeState::getLine() const {
 }
 
 void RuntimeState::step() {
-    std::cout << "Running line " << line << "\n";
-    
-    if (line >= instructions.size()) {
-        std::cout << "Execution complete\n";
-        return exit(0);
-    }
+    if (line >= instructions.size()) return exit(0);
 
     Assembly instruction = std::get<0>(instructions[line]);
     std::vector<std::string> args = std::get<1>(instructions[line]);
@@ -136,7 +131,6 @@ void RuntimeState::step() {
             fn->id = std::stoull(args[1]);
             fn->name = args[0];
             getCurrentScope()->setMember(fn->name, fn);
-            std::cout << "Function defined with id " + args[1] + "\n";
             
             while (std::get<0>(instructions[line]) != Assembly::END_DEFINE_FUNCTION) {
                 if (line > instructions.size() - 1) throw std::runtime_error("Assembly Syntax Error: Unexpected EOF while defining function");

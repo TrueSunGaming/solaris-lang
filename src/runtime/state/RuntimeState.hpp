@@ -11,6 +11,9 @@
 #include "../data/scope/Scope.hpp"
 #include "AbstractFunctionCaller.hpp"
 
+#define STEP_DECLARATION(x) void step##x(const std::vector<std::string>& args)
+#define STEP_DEFINITION(x) void RuntimeState::step##x(const std::vector<std::string>& args)
+
 class RuntimeState : public AbstractFunctionCaller {
     private:
         typedef std::vector<std::tuple<Assembly, std::vector<std::string>>> Instructions;
@@ -28,6 +31,16 @@ class RuntimeState : public AbstractFunctionCaller {
         std::vector<Object *> parseArgs(std::vector<std::string> args);
 
         std::unique_ptr<Object> createObject(const std::string& val);
+
+        STEP_DECLARATION(DECLARE);
+        STEP_DECLARATION(PUSH_TEMP);
+        STEP_DECLARATION(POP_TEMP);
+        STEP_DECLARATION(DEFINE_FUNCTION);
+        STEP_DECLARATION(END_DEFINE_FUNCTION);
+        STEP_DECLARATION(ADD_FUNCTION_ARGUMENT);
+        STEP_DECLARATION(CALL);
+        STEP_DECLARATION(RETURN);
+        STEP_DECLARATION(NAMESPACE_ACCESS);
     
     public:
         RuntimeState(const std::string& filename);

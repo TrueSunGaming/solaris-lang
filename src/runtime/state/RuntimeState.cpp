@@ -8,6 +8,11 @@
 #include <regex>
 #include <sstream>
 
+#define CASE_STEP(x) \
+    case Assembly::x: \
+        step##x(args); \
+        break;
+
 RuntimeState::Instructions RuntimeState::load(const std::string& filename) {
     FileManager file = FileManager(filename);
     std::string content = file.read();
@@ -115,84 +120,84 @@ void RuntimeState::step() {
     std::vector<std::string> args = std::get<1>(instructions[line]);
 
     switch (instruction) {
-        case Assembly::CALL: {
-            std::string functionName = args[0];
-            
-            Function *fn = (Function *)getObject(functionName);
-            if (!fn) throw std::runtime_error("Function '" + functionName + "' does not exist");
-
-            fn->call(this, parseArgs(std::vector(args.begin() + 1, args.end())));
-            break;
-        }
-
-        case Assembly::DEFINE_FUNCTION: {
-            SolarisFunction *fn = new SolarisFunction();
-            fn->startLine = line;
-            fn->id = std::stoull(args[1]);
-            fn->name = args[0];
-            getCurrentScope()->setMember(fn->name, fn);
-            
-            while (std::get<0>(instructions[line]) != Assembly::END_DEFINE_FUNCTION) {
-                if (line > instructions.size() - 1) throw std::runtime_error("Assembly Syntax Error: Unexpected EOF while defining function");
-                line++;
-            }
-
-            break;
-        }
-
-        case Assembly::ADD_FUNCTION_ARGUMENT: {
-            SolarisFunction *fn = getFunction(std::stoull(args[0]));
-            if (!fn) throw std::runtime_error("Function with id " + args[0] + " does not exist");
-
-            fn->args.emplace_back(args[1], ValueType::NULL_VAL);
-            break;
-        }
-
-        case Assembly::END_DEFINE_FUNCTION:
-            ret();
-            break;
-        
-        case Assembly::PUSH_TEMP: {
-            Object *obj = getObject(args[0]);
-            if (obj) {
-                pushTemp(obj);
-                break;
-            }
-
-            moveTemp(createObject(args[0]));
-            break;
-        }
-
-        case Assembly::POP_TEMP: {
-            size_t delCount = args.size() >= 1 ? std::stoull(args[0]) : 1;
-            size_t startIndex = args.size() >= 2 ? std::stoull(args[1]) : 0;
-
-            for (size_t i = 0; i < delCount; i++) tempStack.erase(tempStack.end() - startIndex - 1);
-            break;
-        }
-
-        case Assembly::NAMESPACE_ACCESS: {
-            Object *ns = getObject(args[0]);
-            if (!ns) throw std::runtime_error("Could not get namespace " + args[0]);
-
-            Object *name = getObject(args[1]);
-            bool nameValid = name && name->getType() == ValueType::STRING;
-            bool argIsString = args[1][0] == args[1][args[1].size() - 1] && (args[1][0] == '"' || args[1][0] == '\'');
-            if (!nameValid && !argIsString) throw std::runtime_error("Could not get name from " + args[1]);
-            std::string memberName = nameValid ? name->getValueAs<std::string>() : args[1].substr(1, args[1].size() - 2);
-
-            std::unordered_map<std::string, std::unique_ptr<Object>>& members = ns->getMembers();
-            if (!members.contains(memberName)) throw std::runtime_error("Namespace " + args[0] + " does not contain member " + memberName);
-
-            pushTemp(members.at(memberName).get());
-            break;
-        }
+        CASE_STEP(CALL)
+        CASE_STEP(DEFINE_FUNCTION)
+        CASE_STEP(ADD_FUNCTION_ARGUMENT)
+        CASE_STEP(END_DEFINE_FUNCTION)
+        CASE_STEP(PUSH_TEMP)
+        CASE_STEP(POP_TEMP)
+        CASE_STEP(NAMESPACE_ACCESS)
 
         default:
             throw std::runtime_error("Unknown instruction " + std::to_string((int)instruction));
     }
 
     line++;
+}
+
+STEP_DEFINITION(CALL) {
+    std::string functionName = args[0];
+    
+    Function *fn = (Function *)getObject(functionName);
+    if (!fn) throw std::runtime_error("Function '" + functionName + "' does not exist");
+
+    fn->call(this, parseArgs(std::vector(args.begin() + 1, args.end())));
+}
+
+STEP_DEFINITION(DEFINE_FUNCTION) {
+    SolarisFunction *fn = new SolarisFunction();
+    fn->startLine = line;
+    fn->id = std::stoull(args[1]);
+    fn->name = args[0];
+    getCurrentScope()->setMember(fn->name, fn);
+    
+    while (std::get<0>(instructions[line]) != Assembly::END_DEFINE_FUNCTION) {
+        if (line > instructions.size() - 1) throw std::runtime_error("Assembly Syntax Error: Unexpected EOF while defining function");
+        line++;
+    }
+}
+
+STEP_DEFINITION(ADD_FUNCTION_ARGUMENT) {
+    SolarisFunction *fn = getFunction(std::stoull(args[0]));
+    if (!fn) throw std::runtime_error("Function with id " + args[0] + " does not exist");
+
+    fn->args.emplace_back(args[1], ValueType::NULL_VAL);
+}
+
+STEP_DEFINITION(END_DEFINE_FUNCTION) {
+    ret();
+}
+
+STEP_DEFINITION(PUSH_TEMP) {
+    Object *obj = getObject(args[0]);
+    if (obj) return pushTemp(obj);
+
+    moveTemp(createObject(args[0]));
+}
+
+STEP_DEFINITION(POP_TEMP) {
+    size_t delCount = args.size() >= 1 ? std::stoull(args[0]) : 1;
+    size_t startIndex = args.size() >= 2 ? std::stoull(args[1]) : 0;
+
+    for (size_t i = 0; i < delCount; i++) tempStack.erase(tempStack.end() - startIndex - 1);
+}
+
+STEP_DEFINITION(NAMESPACE_ACCESS) {
+    Object *ns = getObject(args[0]);
+    if (!ns) throw std::runtime_error("Could not get namespace " + args[0]);
+
+    Object *name = getObject(args[1]);
+    bool nameValid = name && name->getType() == ValueType::STRING;
+
+    bool argIsString = args[1][0] == args[1][args[1].size() - 1] && (args[1][0] == '"' || args[1][0] == '\'');
+
+    if (!nameValid && !argIsString) throw std::runtime_error("Could not get name from " + args[1]);
+    std::string memberName = nameValid ? name->getValueAs<std::string>() : args[1].substr(1, args[1].size() - 2);
+
+    std::unordered_map<std::string, std::unique_ptr<Object>>& members = ns->getMembers();
+    if (!members.contains(memberName)) throw std::runtime_error("Namespace " + args[0] + " does not contain member " + memberName);
+
+    pushTemp(members.at(memberName).get());
 }
 
 void RuntimeState::jump(size_t line) {

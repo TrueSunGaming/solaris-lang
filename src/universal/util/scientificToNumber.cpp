@@ -1,4 +1,5 @@
 #include "scientificToNumber.hpp"
+#include <cstdint>
 
 template <class T> T scientificToNumber(const std::string& str) {
     std::istringstream stream = std::istringstream(str);

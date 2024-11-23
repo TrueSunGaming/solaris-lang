@@ -1,5 +1,6 @@
 #include "Scope.hpp"
 #include <iostream>
+#include <algorithm>
 
 Object *Scope::getMember(std::string name) {
     if (!members.contains(name)) return nullptr;

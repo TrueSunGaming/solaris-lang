@@ -11,8 +11,9 @@
 #include "../data/scope/Scope.hpp"
 #include "AbstractFunctionCaller.hpp"
 
-#define STEP_DECLARATION(x) void step##x(const std::vector<std::string>& args)
-#define STEP_DEFINITION(x) void RuntimeState::step##x(const std::vector<std::string>& args)
+#define STEP_FUNCTION(x) step##x(const std::vector<std::string>& args)
+#define STEP_DECLARATION(x) void STEP_FUNCTION(x)
+#define STEP_DEFINITION(x) void RuntimeState::STEP_FUNCTION(x)
 
 class RuntimeState : public AbstractFunctionCaller {
     private:

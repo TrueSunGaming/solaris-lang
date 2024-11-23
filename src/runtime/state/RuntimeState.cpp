@@ -183,6 +183,7 @@ void RuntimeState::step() {
             if (!members.contains(memberName)) throw std::runtime_error("Namespace " + args[0] + " does not contain member " + memberName);
 
             pushTemp(members.at(memberName).get());
+            break;
         }
 
         default:

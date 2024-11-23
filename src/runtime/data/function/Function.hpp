@@ -11,7 +11,7 @@ class Function : public Object {
         Object *returnObj = nullptr;
         std::vector<FunctionArgument> args;
 
-        Function(Object *returnObj = nullptr);
+        Function(Object *returnObj = nullptr, std::vector<FunctionArgument> args = {});
 
-        virtual void call(AbstractFunctionCaller *runtime, std::vector<Object *> args) const = 0;
+        virtual void call(AbstractFunctionCaller *runtime, const std::vector<Object *>& args) const = 0;
 };

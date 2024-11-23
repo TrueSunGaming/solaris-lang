@@ -1,3 +1,5 @@
 #include "Function.hpp"
 
-Function::Function(Object *returnObj) : returnObj(returnObj) {}
+Function::Function(Object *returnObj, std::vector<FunctionArgument> args) :
+    returnObj(returnObj),
+    args(args) {}

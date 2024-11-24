@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <set>
 #include <vector>
 #include <string>
 #include <memory>
@@ -28,6 +29,9 @@ class Object {
 
         ValueType getType() const;
         void setType(ValueType type, bool reset = true);
+
+        bool is(ValueType type) const;
+        bool is(const std::set<ValueType> &types) const;
 
         std::unordered_map<std::string, std::unique_ptr<Object>>& getMembers();
         std::vector<std::unique_ptr<Object>>& getIterable();

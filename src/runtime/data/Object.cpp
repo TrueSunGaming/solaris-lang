@@ -88,6 +88,14 @@ void Object::setType(ValueType type, bool reset) {
     if (reset) resetValue();
 }
 
+bool Object::is(ValueType type) const {
+    return this->type == type;
+}
+
+bool Object::is(const std::set<ValueType> &types) const {
+    return types.contains(type);
+}
+
 std::unordered_map<std::string, std::unique_ptr<Object>>& Object::getMembers() {
     return members;
 }

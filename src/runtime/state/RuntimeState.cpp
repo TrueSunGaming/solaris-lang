@@ -136,12 +136,29 @@ void RuntimeState::step() {
 }
 
 STEP_DEFINITION(CALL) {
-    std::string functionName = args[0];
+    if (args.size() < 1) throw std::runtime_error("Assembly Syntax Error: No function provided to call");
     
-    Function *fn = (Function *)getObject(functionName);
-    if (!fn) throw std::runtime_error("Function '" + functionName + "' does not exist");
+    Function *fn = (Function *)getObject(args[0]);
+    if (!fn) throw std::runtime_error("Function '" + args[0] + "' does not exist");
 
-    fn->call(this, parseArgs(std::vector(args.begin() + 1, args.end())));
+    std::vector<Object *> parsedArgs;
+    std::vector<std::unique_ptr<Object>> created;
+    for (size_t i = 1; i < args.size(); i++) {
+        Object *obj = getObject(args[i]);
+
+        if (!obj) {
+            try {
+                created.push_back(createObject(args[i]));
+                obj = created.back().get();
+            } catch(std::exception e) {
+                throw std::runtime_error("Variable '" + args[i] + "' does not exist and a value could not be created");
+            }
+        }
+
+        parsedArgs.push_back(obj);
+    }
+
+    fn->call(this, parsedArgs);
 }
 
 STEP_DEFINITION(DEFINE_FUNCTION) {

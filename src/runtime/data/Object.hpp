@@ -15,7 +15,7 @@ class Object {
 
     public:
         Object() = default;
-        Object(ValueType type);
+        Object(ValueType type, void *value = nullptr);
         ~Object();
 
         void free();

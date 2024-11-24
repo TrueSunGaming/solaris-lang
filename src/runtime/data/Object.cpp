@@ -1,7 +1,7 @@
 #include "Object.hpp"
 #include <iostream>
 
-Object::Object(ValueType type) : type(type) {}
+Object::Object(ValueType type, void *value) : type(type), raw(value) {}
 
 Object::~Object() {
     free();

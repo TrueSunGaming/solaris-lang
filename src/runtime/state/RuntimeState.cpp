@@ -63,25 +63,16 @@ Object *RuntimeState::getObject(const std::string& name) {
 }
 
 std::unique_ptr<Object> RuntimeState::createObject(const std::string& val) {
-    std::unique_ptr<Object> obj = std::make_unique<Object>();
-
     if (val.starts_with("\"") || val.starts_with("'")) {
-        obj->setType(ValueType::STRING);
-        obj->setValue(new std::string(val.substr(1, val.size() - 2)));
-
-        return std::move(obj);
+        return std::make_unique<Object>(ValueType::STRING, new std::string(val.substr(1, val.size() - 2)));
     }
 
     if (std::regex_match(val, std::regex(tokenRegexMap.at(TokenType::FLOAT)))) {
-        obj->setType(ValueType::FLOAT);
-        obj->setValue(new double(scientificToNumber<double>(val)));
-        return std::move(obj);
+        return std::make_unique<Object>(ValueType::FLOAT, new double(scientificToNumber<double>(val)));
     }
 
     if (std::regex_match(val, std::regex(tokenRegexMap.at(TokenType::INTEGER)))) {
-        obj->setType(ValueType::INTEGER);
-        obj->setValue(new int64_t(scientificToNumber<int64_t>(val)));
-        return std::move(obj);
+        return std::make_unique<Object>(ValueType::INTEGER, new int64_t(scientificToNumber<int64_t>(val)));
     }
 
     throw std::runtime_error("Failed to create object from value: " + val);

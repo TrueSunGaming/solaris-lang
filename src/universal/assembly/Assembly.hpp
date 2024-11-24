@@ -9,5 +9,10 @@ enum class Assembly {
     RETURN,
     NAMESPACE_ACCESS,
     ADD,
+    SUBTRACT,
+    MULTIPLY,
+    DIVIDE,
+    MODULO,
+    EXPONENT,
     ASSEMBLY_MAX
 };

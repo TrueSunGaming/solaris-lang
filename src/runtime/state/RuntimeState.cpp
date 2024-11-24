@@ -15,8 +15,6 @@
         step##x(args); \
         break;
 
-#define OBJ_OPERATION(lhs, rhs, op, valType, type) std::make_unique<Object>(ValueType::valType, new type(lhs->getValueAs<type>() op rhs->getValueAs<type>()))
-
 RuntimeState::Instructions RuntimeState::load(const std::string& filename) {
     FileManager file = FileManager(filename);
     std::string content = file.read();
@@ -137,108 +135,17 @@ void RuntimeState::step() {
         CASE_STEP(POP_TEMP)
         CASE_STEP(NAMESPACE_ACCESS)
         CASE_STEP(ADD)
+        CASE_STEP(SUBTRACT)
+        CASE_STEP(MULTIPLY)
+        CASE_STEP(DIVIDE)
+        CASE_STEP(MODULO)
+        CASE_STEP(EXPONENT)
 
         default:
             throw std::runtime_error("Unknown instruction " + std::to_string((int)instruction));
     }
 
     line++;
-}
-
-STEP_DEFINITION(CALL) {
-    if (args.size() < 1) throw std::runtime_error("Assembly Syntax Error: No function provided to call");
-    
-    Function *fn = (Function *)getObject(args[0]);
-    if (!fn) throw std::runtime_error("Function '" + args[0] + "' does not exist");
-
-    std::vector<Object *> parsedArgs;
-    std::vector<std::unique_ptr<Object>> created;
-    for (size_t i = 1; i < args.size(); i++) {
-        parsedArgs.push_back(getOrCreateObject(args[i], created));
-    }
-
-    fn->call(this, parsedArgs);
-}
-
-STEP_DEFINITION(DEFINE_FUNCTION) {
-    SolarisFunction *fn = new SolarisFunction();
-    fn->startLine = line;
-    fn->id = std::stoull(args[1]);
-    fn->name = args[0];
-    getCurrentScope()->setMember(fn->name, fn);
-    
-    while (std::get<0>(instructions[line]) != Assembly::END_DEFINE_FUNCTION) {
-        if (line > instructions.size() - 1) throw std::runtime_error("Assembly Syntax Error: Unexpected EOF while defining function");
-        line++;
-    }
-}
-
-STEP_DEFINITION(ADD_FUNCTION_ARGUMENT) {
-    SolarisFunction *fn = getFunction(std::stoull(args[0]));
-    if (!fn) throw std::runtime_error("Function with id " + args[0] + " does not exist");
-
-    fn->args.emplace_back(args[1], ValueType::NULL_VAL);
-}
-
-STEP_DEFINITION(END_DEFINE_FUNCTION) {
-    ret();
-}
-
-STEP_DEFINITION(PUSH_TEMP) {
-    Object *obj = getObject(args[0]);
-    if (obj) return pushTemp(obj);
-
-    moveTemp(createObject(args[0]));
-}
-
-STEP_DEFINITION(POP_TEMP) {
-    size_t delCount = args.size() >= 1 ? std::stoull(args[0]) : 1;
-    size_t startIndex = args.size() >= 2 ? std::stoull(args[1]) : 0;
-
-    for (size_t i = 0; i < delCount; i++) tempStack.erase(tempStack.end() - startIndex - 1);
-}
-
-STEP_DEFINITION(NAMESPACE_ACCESS) {
-    Object *ns = getObject(args[0]);
-    if (!ns) throw std::runtime_error("Could not get namespace " + args[0]);
-
-    Object *name = getObject(args[1]);
-    bool nameValid = name && name->getType() == ValueType::STRING;
-
-    bool argIsString = args[1][0] == args[1][args[1].size() - 1] && (args[1][0] == '"' || args[1][0] == '\'');
-
-    if (!nameValid && !argIsString) throw std::runtime_error("Could not get name from " + args[1]);
-    std::string memberName = nameValid ? name->getValueAs<std::string>() : args[1].substr(1, args[1].size() - 2);
-
-    std::unordered_map<std::string, std::unique_ptr<Object>>& members = ns->getMembers();
-    if (!members.contains(memberName)) throw std::runtime_error("Namespace " + args[0] + " does not contain member " + memberName);
-
-    pushTemp(members.at(memberName).get());
-}
-
-STEP_DEFINITION(ADD) {
-    if (args.size() < 2) throw std::runtime_error("Assembly Syntax Error: Add requires 2 arguments");
-
-    std::vector<std::unique_ptr<Object>> created;
-
-    Object *lhs = getOrCreateObject(args[0], created);
-    Object *rhs = getOrCreateObject(args[1], created);
-
-    if (lhs->getType() != rhs->getType()) throw std::runtime_error("Mismatched types in addition");
-
-    switch (lhs->getType()) {
-        case ValueType::INTEGER:
-            return moveTemp(OBJ_OPERATION(lhs, rhs, +, INTEGER, int64_t));
-        
-        case ValueType::FLOAT:
-            return moveTemp(OBJ_OPERATION(lhs, rhs, +, FLOAT, double));
-        
-        case ValueType::STRING:
-            return moveTemp(OBJ_OPERATION(lhs, rhs, +, STRING, std::string));
-        
-        default:
-            throw std::runtime_error("Cannot add type " + std::to_string((int)lhs->getType()));
-    }
 }
 
 void RuntimeState::jump(size_t line) {

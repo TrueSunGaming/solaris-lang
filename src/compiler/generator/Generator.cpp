@@ -112,6 +112,11 @@ std::string Generator::generateOperation(AST *ast) {
     res += generateRecursive(ast->children[1].get());
 
     if (ast->value == "+") res += generateLine(Assembly::ADD, { "%tmp1", "%tmp0" });
+    else if (ast->value == "-") res += generateLine(Assembly::SUBTRACT, { "%tmp1", "%tmp0" });
+    else if (ast->value == "*") res += generateLine(Assembly::MULTIPLY, { "%tmp1", "%tmp0" });
+    else if (ast->value == "/") res += generateLine(Assembly::DIVIDE, { "%tmp1", "%tmp0" });
+    else if (ast->value == "%") res += generateLine(Assembly::MODULO, { "%tmp1", "%tmp0" });
+    else if (ast->value == "**") res += generateLine(Assembly::EXPONENT, { "%tmp1", "%tmp0" });
     else res += generateLine(Assembly::PUSH_TEMP, { "null" });
 
     res += generateLine(Assembly::POP_TEMP, { "2", "1" });

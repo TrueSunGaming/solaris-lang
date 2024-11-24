@@ -14,6 +14,7 @@
 #define STEP_FUNCTION(x) step##x(const std::vector<std::string>& args)
 #define STEP_DECLARATION(x) void STEP_FUNCTION(x)
 #define STEP_DEFINITION(x) void RuntimeState::STEP_FUNCTION(x)
+#define OBJ_OPERATION(lhs, rhs, op, valType, type) std::make_unique<Object>(ValueType::valType, new type(lhs->getValueAs<type>() op rhs->getValueAs<type>()))
 
 class RuntimeState : public AbstractFunctionCaller {
     private:
@@ -44,7 +45,12 @@ class RuntimeState : public AbstractFunctionCaller {
         STEP_DECLARATION(RETURN);
         STEP_DECLARATION(NAMESPACE_ACCESS);
         STEP_DECLARATION(ADD);
-    
+        STEP_DECLARATION(SUBTRACT);
+        STEP_DECLARATION(MULTIPLY);
+        STEP_DECLARATION(DIVIDE);
+        STEP_DECLARATION(MODULO);
+        STEP_DECLARATION(EXPONENT);
+        
     public:
         RuntimeState(const std::string& filename);
 

@@ -39,6 +39,12 @@ std::string Generator::generateRecursive(AST *ast) {
             res += generateLine(Assembly::PUSH_TEMP, { "\"" + ast->value + "\"" });
             break;
         
+        case ASTType::FLOAT:
+        case ASTType::INTEGER:
+        case ASTType::BOOLEAN:
+            res += generateLine(Assembly::PUSH_TEMP, { ast->value });
+            break;
+        
         case ASTType::GET:
             res += generateLine(Assembly::PUSH_TEMP, { ast->value });
             break;

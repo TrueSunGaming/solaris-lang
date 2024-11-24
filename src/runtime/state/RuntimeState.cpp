@@ -4,6 +4,7 @@
 #include "../data/function/SolarisFunction.hpp"
 #include "../../universal/tokens/TokenType.hpp"
 #include "../../universal/util/scientificToNumber.hpp"
+#include "../../universal/util/mergeEscape.hpp"
 #include <iostream>
 #include <regex>
 #include <sstream>
@@ -64,7 +65,7 @@ Object *RuntimeState::getObject(const std::string& name) {
 
 std::unique_ptr<Object> RuntimeState::createObject(const std::string& val) {
     if (val.starts_with("\"") || val.starts_with("'")) {
-        return std::make_unique<Object>(ValueType::STRING, new std::string(val.substr(1, val.size() - 2)));
+        return std::make_unique<Object>(ValueType::STRING, new std::string(mergeEscape(val.substr(1, val.size() - 2))));
     }
 
     if (std::regex_match(val, std::regex(tokenRegexMap.at(TokenType::FLOAT)))) {

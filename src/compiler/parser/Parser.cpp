@@ -178,6 +178,7 @@ bool Parser::parseIdentifier() {
     if (isKeyword) return parseKeyword();
 
     push(ASTType::GET, token.value);
+    nested.pop();
     searchPosition++;
 
     return true;
@@ -388,6 +389,7 @@ bool Parser::parseBlock() {
 bool Parser::parseOperator() {
     std::cout << "Parsing operator at " << searchPosition << "\n";
 
+    nested.push(nested.top()->children.back().get());
     wrapParent(ASTType::OPERATION, tokens[searchPosition].value);
     nested.pop();
     searchPosition++;

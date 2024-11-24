@@ -8,5 +8,6 @@ enum class Assembly {
     CALL,
     RETURN,
     NAMESPACE_ACCESS,
+    ADD,
     ASSEMBLY_MAX
 };

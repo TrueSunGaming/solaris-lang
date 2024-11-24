@@ -8,11 +8,14 @@
 #include <iostream>
 #include <regex>
 #include <sstream>
+#include <algorithm>
 
 #define CASE_STEP(x) \
     case Assembly::x: \
         step##x(args); \
         break;
+
+#define OBJ_OPERATION(lhs, rhs, op, valType, type) std::make_unique<Object>(ValueType::valType, new type(lhs->getValueAs<type>() op rhs->getValueAs<type>()))
 
 RuntimeState::Instructions RuntimeState::load(const std::string& filename) {
     FileManager file = FileManager(filename);
@@ -79,6 +82,20 @@ std::unique_ptr<Object> RuntimeState::createObject(const std::string& val) {
     throw std::runtime_error("Failed to create object from value: " + val);
 }
 
+Object *RuntimeState::getOrCreateObject(const std::string& val, std::vector<std::unique_ptr<Object>>& created) {
+    Object *obj = getObject(val);
+    if (!obj) {
+        try {
+            created.push_back(createObject(val));
+            obj = created.back().get();
+        } catch (std::exception e) {
+            throw std::runtime_error("Variable '" + val + "' does not exist and a value could not be created");
+        }
+    }
+
+    return obj;
+}
+
 SolarisFunction *RuntimeState::getFunction(size_t id) {
     return getCurrentScope()->findAndGetFunction(id, globalScope.get());
 }
@@ -119,6 +136,7 @@ void RuntimeState::step() {
         CASE_STEP(PUSH_TEMP)
         CASE_STEP(POP_TEMP)
         CASE_STEP(NAMESPACE_ACCESS)
+        CASE_STEP(ADD)
 
         default:
             throw std::runtime_error("Unknown instruction " + std::to_string((int)instruction));
@@ -136,18 +154,7 @@ STEP_DEFINITION(CALL) {
     std::vector<Object *> parsedArgs;
     std::vector<std::unique_ptr<Object>> created;
     for (size_t i = 1; i < args.size(); i++) {
-        Object *obj = getObject(args[i]);
-
-        if (!obj) {
-            try {
-                created.push_back(createObject(args[i]));
-                obj = created.back().get();
-            } catch(std::exception e) {
-                throw std::runtime_error("Variable '" + args[i] + "' does not exist and a value could not be created");
-            }
-        }
-
-        parsedArgs.push_back(obj);
+        parsedArgs.push_back(getOrCreateObject(args[i], created));
     }
 
     fn->call(this, parsedArgs);
@@ -207,6 +214,31 @@ STEP_DEFINITION(NAMESPACE_ACCESS) {
     if (!members.contains(memberName)) throw std::runtime_error("Namespace " + args[0] + " does not contain member " + memberName);
 
     pushTemp(members.at(memberName).get());
+}
+
+STEP_DEFINITION(ADD) {
+    if (args.size() < 2) throw std::runtime_error("Assembly Syntax Error: Add requires 2 arguments");
+
+    std::vector<std::unique_ptr<Object>> created;
+
+    Object *lhs = getOrCreateObject(args[0], created);
+    Object *rhs = getOrCreateObject(args[1], created);
+
+    if (lhs->getType() != rhs->getType()) throw std::runtime_error("Mismatched types in addition");
+
+    switch (lhs->getType()) {
+        case ValueType::INTEGER:
+            return moveTemp(OBJ_OPERATION(lhs, rhs, +, INTEGER, int64_t));
+        
+        case ValueType::FLOAT:
+            return moveTemp(OBJ_OPERATION(lhs, rhs, +, FLOAT, double));
+        
+        case ValueType::STRING:
+            return moveTemp(OBJ_OPERATION(lhs, rhs, +, STRING, std::string));
+        
+        default:
+            throw std::runtime_error("Cannot add type " + std::to_string((int)lhs->getType()));
+    }
 }
 
 void RuntimeState::jump(size_t line) {

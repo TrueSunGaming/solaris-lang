@@ -32,6 +32,7 @@ class RuntimeState : public AbstractFunctionCaller {
         std::vector<Object *> parseArgs(std::vector<std::string> args);
 
         std::unique_ptr<Object> createObject(const std::string& val);
+        Object *getOrCreateObject(const std::string& val, std::vector<std::unique_ptr<Object>>& created);
 
         STEP_DECLARATION(DECLARE);
         STEP_DECLARATION(PUSH_TEMP);
@@ -42,6 +43,7 @@ class RuntimeState : public AbstractFunctionCaller {
         STEP_DECLARATION(CALL);
         STEP_DECLARATION(RETURN);
         STEP_DECLARATION(NAMESPACE_ACCESS);
+        STEP_DECLARATION(ADD);
     
     public:
         RuntimeState(const std::string& filename);

@@ -24,6 +24,8 @@ class LinkedList {
 
         bool setValue(size_t distance, const T& value);
 
-        bool removeNode(size_t distance);
-        void removeNodes(size_t distance, size_t count = 1);
+        bool removeNode(size_t distance, bool free = true);
+        void removeNodes(size_t distance, size_t count = 1, bool free = true);
 };
+
+#include "LinkedList.tpp"

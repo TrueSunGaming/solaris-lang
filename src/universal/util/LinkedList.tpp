@@ -84,16 +84,27 @@ template <class T> bool LinkedList<T>::setValue(size_t distance, const T& value)
     return !!node;
 }
 
-template <class T> bool LinkedList<T>::removeNode(size_t distance) {
+template <class T> bool LinkedList<T>::removeNode(size_t distance, bool free) {
     LinkedList<T> *node = getNode(distance - 1);
 
     bool success = node && node->next;
-    if (success) node->next = node->next->next;
+    if (success) {
+        LinkedList<T> *newNext = node->next->next;
+        if (free) delete node->next;
+        node->next = newNext;
+    }
 
     return success;
 }
 
-template <class T> void LinkedList<T>::removeNodes(size_t distance, size_t count) {
+template <class T> void LinkedList<T>::removeNodes(size_t distance, size_t count, bool free) {
     LinkedList<T> *node = getNode(distance - 1);
-    if (node) node->next = node->getNode(count + 1);
+    if (node) {
+        std::vector<LinkedList<T> *> nodes = node->getNodes(1, count - 2);
+        LinkedList<T> *newNext = nodes.back()->next;
+
+        if (free) for (const auto i : nodes) delete i;
+
+        node->next = newNext;
+    }
 }

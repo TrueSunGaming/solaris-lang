@@ -1,7 +1,18 @@
 #include "LinkedList.hpp"
 
-template <class T> LinkedList<T>::LinkedList(T value) : value(value) {}
-template <class T> LinkedList<T>::LinkedList(T value, LinkedList<T> *next) : value(value), next(next) {}
+template <class T> LinkedList<T>::LinkedList(const T& value) : value(value) {}
+template <class T> LinkedList<T>::LinkedList(const T& value, LinkedList<T> *next) : value(value), next(next) {}
+
+template <class T> LinkedList<T>::LinkedList(const std::vector<T>& values) {
+    if (values.size() < 1) throw std::runtime_error("LinkedList requires a value");
+    value = values[0];
+
+    LinkedList<T> *cur = this;
+    for (size_t i = 1; i < values.size(); i++) {
+        cur->next = new LinkedList(values[i]);
+        cur = cur->next;
+    }
+}
 
 template <class T> LinkedList<T> *LinkedList<T>::getNode(size_t distance) {
     LinkedList<T> *node = this;
@@ -67,7 +78,22 @@ template <class T> std::vector<T> LinkedList<T>::getValues(const std::vector<siz
     return values;
 }
 
-template <class T> void LinkedList<T>::removeNode(size_t distance) {
+template <class T> bool LinkedList<T>::setValue(size_t distance, const T& value) {
+    LinkedList<T> *node = getNode(distance);
+    if (node) node->value = value;
+    return !!node;
+}
+
+template <class T> bool LinkedList<T>::removeNode(size_t distance) {
     LinkedList<T> *node = getNode(distance - 1);
-    if (node && node->next) node->next = node->next->next;
+
+    bool success = node && node->next;
+    if (success) node->next = node->next->next;
+
+    return success;
+}
+
+template <class T> void LinkedList<T>::removeNodes(size_t distance, size_t count) {
+    LinkedList<T> *node = getNode(distance - 1);
+    if (node) node->next = node->getNode(count + 1);
 }

@@ -14,6 +14,7 @@ class Generator {
 
         static std::string generateLine(Assembly type, const std::vector<std::string>& args = {});
         static std::string generateType(std::string type);
+        std::vector<std::string> generateTypeRecursive(AST *ast);
         std::string generateRecursive(AST *ast);
         std::string generateFunctionDefinition(AST *ast);
         std::string generateFunctionCall(AST *ast);

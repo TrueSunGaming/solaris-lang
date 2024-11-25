@@ -1,6 +1,8 @@
 #pragma once
 
 #include <unordered_map>
+#include <map>
+#include <optional>
 #include <set>
 #include <vector>
 #include <string>
@@ -11,8 +13,12 @@ class Object {
     private:
         void *raw = nullptr;
         ValueType type = ValueType::NULL_VAL;
-        std::unordered_map<std::string, std::unique_ptr<Object>> members = {};
-        std::vector<std::unique_ptr<Object>> iterableMembers = {};
+        std::unordered_map<std::string, std::unique_ptr<Object>> ownMembers = {};
+        std::unordered_map<std::string, Object *> members = {};
+        std::vector<std::optional<std::unique_ptr<Object>>> ownIterableMembers = {};
+        std::vector<Object *> iterableMembers = {};
+
+        void freeMembers();
 
     public:
         Object() = default;
@@ -33,6 +39,23 @@ class Object {
         bool is(ValueType type) const;
         bool is(const std::set<ValueType> &types) const;
 
-        std::unordered_map<std::string, std::unique_ptr<Object>>& getMembers();
-        std::vector<std::unique_ptr<Object>>& getIterable();
+        Object *getMember(const std::string& name);
+        void setMember(const std::string& name, Object *value);
+        void moveMember(const std::string& name, Object *value);
+        void moveMember(const std::string& name, std::unique_ptr<Object> value);
+        void removeMember(const std::string& name);
+
+        Object *getIterableMember(size_t index);
+        void setIterableMember(size_t index, Object *value);
+        void moveIterableMember(size_t index, Object *value);
+        void moveIterableMember(size_t index, std::unique_ptr<Object> value);
+        void removeIterableMember(size_t index);
+
+        void push(Object *value);
+        void pushMove(Object *value);
+        void pushMove(std::unique_ptr<Object> value);
+
+        Object *pop();
+
+        Object& operator=(const Object *other);
 };

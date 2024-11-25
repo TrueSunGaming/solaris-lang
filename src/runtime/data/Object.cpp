@@ -7,7 +7,16 @@ Object::~Object() {
     free();
 }
 
+void Object::freeMembers() {
+    members.clear();
+    ownMembers.clear();
+    iterableMembers.clear();
+    ownIterableMembers.clear();
+}
+
 void Object::free() {
+    freeMembers();
+
     if (!raw) return;
 
     switch (type) {
@@ -96,10 +105,87 @@ bool Object::is(const std::set<ValueType> &types) const {
     return types.contains(type);
 }
 
-std::unordered_map<std::string, std::unique_ptr<Object>>& Object::getMembers() {
-    return members;
+Object *Object::getMember(const std::string& name) {
+    if (!members.contains(name)) return nullptr;
+    return members.at(name);
 }
 
-std::vector<std::unique_ptr<Object>>& Object::getIterable() {
-    return iterableMembers;
+void Object::setMember(const std::string& name, Object *value) {
+    members[name] = value;
+}
+
+void Object::moveMember(const std::string& name, Object *value) {
+    moveMember(name, std::unique_ptr<Object>(value));
+}
+
+void Object::moveMember(const std::string& name, std::unique_ptr<Object> value) {
+    setMember(name, value.get());
+    ownMembers[name] = std::move(value);
+}
+
+void Object::removeMember(const std::string& name) {
+    members.erase(name);
+    ownMembers.erase(name);
+}
+
+Object *Object::getIterableMember(size_t index) {
+    if (index >= iterableMembers.size()) return nullptr;
+    return iterableMembers[index];
+}
+
+void Object::setIterableMember(size_t index, Object *value) {
+    iterableMembers[index] = value;
+    ownIterableMembers[index] = std::nullopt;
+}
+
+void Object::moveIterableMember(size_t index, Object *value) {
+    moveIterableMember(index, std::unique_ptr<Object>(value));
+}
+
+void Object::moveIterableMember(size_t index, std::unique_ptr<Object> value) {
+    setIterableMember(index, value.get());
+    ownIterableMembers[index] = std::move(value);
+}
+
+void Object::removeIterableMember(size_t index) {
+    iterableMembers.erase(iterableMembers.begin() + index);
+    ownIterableMembers.erase(ownIterableMembers.begin() + index);
+}
+
+void Object::push(Object *value) {
+    iterableMembers.push_back(value);
+    ownIterableMembers.push_back(std::nullopt);
+}
+
+void Object::pushMove(Object *value) {
+    pushMove(std::unique_ptr<Object>(value));
+}
+
+void Object::pushMove(std::unique_ptr<Object> value) {
+    iterableMembers.push_back(value.get());
+    ownIterableMembers.push_back(std::move(value));
+}
+
+Object *Object::pop() {
+    if (iterableMembers.empty()) return nullptr;
+
+    Object *res = iterableMembers.back();
+    
+    iterableMembers.pop_back();
+    ownIterableMembers.pop_back();
+
+    return res;
+}
+
+Object& Object::operator=(const Object *other) {
+    type = other->type;
+    raw = other->raw;
+    freeMembers();
+
+    iterableMembers.reserve(other->iterableMembers.size());
+
+    for (auto &[k, v] : other->members) setMember(k, v);
+    for (auto v : other->iterableMembers) push(v);
+
+    return *this;
 }

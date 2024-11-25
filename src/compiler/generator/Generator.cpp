@@ -14,6 +14,16 @@ std::string Generator::generateType(std::string type) {
     return ParseData::baseTypes.contains(type) ? type : "%type_" + type ;
 }
 
+std::vector<std::string> Generator::generateTypeRecursive(AST *ast) {
+    std::vector<std::string> res = { ast->value };
+
+    for (const auto& i : ast->children) {
+        for (const auto& j : generateTypeRecursive(i.get())) res.push_back(j);
+    }
+
+    return res;
+}
+
 std::string Generator::generateRecursive(AST *ast) {
     std::string res = "";
 
@@ -48,6 +58,16 @@ std::string Generator::generateRecursive(AST *ast) {
         case ASTType::GET:
             res += generateLine(Assembly::PUSH_TEMP, { ast->value });
             break;
+        
+        case ASTType::DECLARE: {
+            std::vector<std::string> args = {
+                ast->value
+            };
+
+            for (const auto& i : generateTypeRecursive(ast->children[0].get())) args.push_back(i);
+
+            res += generateLine(Assembly::DECLARE, args);
+        }
     }
 
     if (ast->type == ASTType::ROOT) res += generateLine(Assembly::CALL, { "main" });
@@ -69,11 +89,10 @@ std::string Generator::generateFunctionDefinition(AST *ast) {
     for (const auto& i : ast->children[1]->children) {
         std::vector<std::string> args = {
             std::to_string(id),
-            i->value,
-            generateType(i->children[0]->value)
+            i->value
         };
 
-        for (const auto& j : i->children[0]->children) args.push_back(j->value);
+        for (const auto& j : generateTypeRecursive(i->children[0].get())) args.push_back(j);
 
         res += generateLine(Assembly::ADD_FUNCTION_ARGUMENT, args);
     }
@@ -117,6 +136,7 @@ std::string Generator::generateOperation(AST *ast) {
     else if (ast->value == "/") res += generateLine(Assembly::DIVIDE, { "%tmp1", "%tmp0" });
     else if (ast->value == "%") res += generateLine(Assembly::MODULO, { "%tmp1", "%tmp0" });
     else if (ast->value == "**") res += generateLine(Assembly::EXPONENT, { "%tmp1", "%tmp0" });
+    else if (ast->value == "=") res += generateLine(Assembly::SET, { "%tmp1", "%tmp0" });
     else res += generateLine(Assembly::PUSH_TEMP, { "null" });
 
     res += generateLine(Assembly::POP_TEMP, { "2", "1" });

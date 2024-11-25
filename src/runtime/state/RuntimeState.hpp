@@ -34,6 +34,8 @@ class RuntimeState : public AbstractFunctionCaller {
 
         std::unique_ptr<Object> createObject(const std::string& val);
         Object *getOrCreateObject(const std::string& val, std::vector<std::unique_ptr<Object>>& created);
+        
+        ValueType determineType(const std::vector<std::string>& args) const;
 
         STEP_DECLARATION(DECLARE);
         STEP_DECLARATION(PUSH_TEMP);
@@ -50,6 +52,7 @@ class RuntimeState : public AbstractFunctionCaller {
         STEP_DECLARATION(DIVIDE);
         STEP_DECLARATION(MODULO);
         STEP_DECLARATION(EXPONENT);
+        STEP_DECLARATION(SET);
         
     public:
         RuntimeState(const std::string& filename);

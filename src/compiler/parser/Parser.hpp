@@ -19,6 +19,8 @@ class Parser {
 
         bool validBrackets() const;
         bool tokenIsType(size_t index, std::optional<std::map<size_t, bool>> cache = std::nullopt) const;
+        size_t getTypeLength() const;
+        bool canDeclare() const;
 
         bool parseIdentifier();
         bool parseKeyword();

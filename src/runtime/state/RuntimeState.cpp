@@ -57,7 +57,21 @@ RuntimeState::Instructions RuntimeState::load(const std::string& filename) {
 
 RuntimeState::RuntimeState(const std::string& filename) :
     instructions(load(filename)),
-    globalScope(std::make_unique<Scope>()) {}
+    globalScope(std::make_unique<Scope>()) {
+    
+    size_t tempSize = 0;
+
+    for (const auto& i : instructions) {
+        for (const auto& j : std::get<1>(i)) {
+            if (!j.starts_with("%tmp")) continue;
+
+            size_t index = std::stoull(j.substr(4));
+            if (index >= tempSize) tempSize = index + 1;
+        }
+    }
+
+    tempStack.reserve(tempSize);
+}
 
 Object *RuntimeState::getObject(const std::string& name) {
     if (name.starts_with("%tmp")) return getTemp(std::stoull(name.substr(4)));
@@ -94,6 +108,20 @@ Object *RuntimeState::getOrCreateObject(const std::string& val, std::vector<std:
     return obj;
 }
 
+ValueType RuntimeState::determineType(const std::vector<std::string>& args) const {
+    if (std::find_if(args.begin(), args.end(), [](const std::string& v) {
+        return v == "array";
+    }) != args.end()) return ValueType::ARRAY;
+
+    if (args[0] == "string") return ValueType::STRING;
+    if (args[0] == "int") return ValueType::INTEGER;
+    if (args[0] == "float") return ValueType::FLOAT;
+    if (args[0] == "bool") return ValueType::BOOLEAN;
+    if (args[0] == "null") return ValueType::NULL_VAL;
+
+    return ValueType::OBJECT;
+}
+
 SolarisFunction *RuntimeState::getFunction(size_t id) {
     return getCurrentScope()->findAndGetFunction(id, globalScope.get());
 }
@@ -121,18 +149,22 @@ size_t RuntimeState::getLine() const {
 }
 
 void RuntimeState::step() {
+    std::cout << "running " << line << "\n";
+
     if (line >= instructions.size()) return exit(0);
 
     Assembly instruction = std::get<0>(instructions[line]);
     std::vector<std::string> args = std::get<1>(instructions[line]);
 
     switch (instruction) {
-        CASE_STEP(CALL)
-        CASE_STEP(DEFINE_FUNCTION)
-        CASE_STEP(ADD_FUNCTION_ARGUMENT)
-        CASE_STEP(END_DEFINE_FUNCTION)
+        CASE_STEP(DECLARE)
         CASE_STEP(PUSH_TEMP)
         CASE_STEP(POP_TEMP)
+        CASE_STEP(DEFINE_FUNCTION)
+        CASE_STEP(END_DEFINE_FUNCTION)
+        CASE_STEP(ADD_FUNCTION_ARGUMENT)
+        CASE_STEP(CALL)
+        CASE_STEP(RETURN)
         CASE_STEP(NAMESPACE_ACCESS)
         CASE_STEP(ADD)
         CASE_STEP(SUBTRACT)
@@ -140,6 +172,7 @@ void RuntimeState::step() {
         CASE_STEP(DIVIDE)
         CASE_STEP(MODULO)
         CASE_STEP(EXPONENT)
+        CASE_STEP(SET)
 
         default:
             throw std::runtime_error("Unknown instruction " + std::to_string((int)instruction));

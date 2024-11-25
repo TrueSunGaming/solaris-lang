@@ -88,6 +88,23 @@ bool Parser::tokenIsType(size_t index, std::optional<std::map<size_t, bool>> cac
     return cache ? (*cache)[index] = res : res;
 }
 
+size_t Parser::getTypeLength() const {
+    size_t res = 0;
+    std::map<size_t, bool> tokenIsTypeCache;
+
+    for (size_t i = searchPosition; i < tokens.size(); i++) {
+        if (!tokenIsType(i, tokenIsTypeCache)) break;
+        res++;
+    }
+
+    return res;
+}
+
+bool Parser::canDeclare() const {
+    size_t typeLength = getTypeLength();
+    return typeLength && ParseData::eolBack.contains(nested.top()->type) && tokens[searchPosition + typeLength].type != TokenType::OPERATOR;
+}
+
 void Parser::push(ASTType type, std::string value) {
     nested.push(nested.top()->createChild(type, value));
 }
@@ -177,6 +194,11 @@ bool Parser::parseIdentifier() {
 
     if (isKeyword) return parseKeyword();
 
+    if (canDeclare()) {
+        push(ASTType::DECLARE);
+        return true;
+    }
+
     push(ASTType::GET, token.value);
     nested.pop();
     searchPosition++;
@@ -196,6 +218,11 @@ bool Parser::parseKeyword() {
     if (token.value == "fn") return parseFunction();
     if (token.value == "true" || token.value == "false") return parseBoolean();
     if (token.value == "null") return parseNull();
+
+    if (canDeclare()) {
+        push(ASTType::DECLARE);
+        return true;
+    }
 
     return false;
 }

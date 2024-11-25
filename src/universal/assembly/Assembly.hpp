@@ -14,5 +14,6 @@ enum class Assembly {
     DIVIDE,
     MODULO,
     EXPONENT,
+    SET,
     ASSEMBLY_MAX
 };

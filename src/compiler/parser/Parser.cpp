@@ -376,6 +376,8 @@ bool Parser::parseCloseCurly() {
 
         if (ParseData::blockParent.contains(nested.top()->type)) nested.pop();
 
+        searchPosition++;
+
         return true;
     }
 

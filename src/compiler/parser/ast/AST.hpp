@@ -18,4 +18,7 @@ class AST {
         std::unique_ptr<AST> removeChild(AST *child);
         void transferChild(AST *child, AST& newParent);
         AST *createChild(ASTType type = ASTType::BLOCK, std::string value = "");
+
+        std::string toString(size_t depth = 0) const;
+        operator std::string() const;
 };

@@ -33,3 +33,16 @@ AST *AST::createChild(ASTType type, std::string value) {
 
     return child;
 }
+
+std::string AST::toString(size_t depth) const {
+    std::string res = "";
+    for (size_t i = 0; i < depth; i++) res += "| ";
+    res += value + " (" + std::to_string((int)type) + ")\n";
+    for (const auto& i : children) res += i->toString(depth + 1);
+
+    return res;
+}
+
+AST::operator std::string() const {
+    return toString();
+}

@@ -9,7 +9,7 @@
 int main(int argc, char *argv[]) {
     if (argc < 2) throw std::runtime_error("No input file specified");
     std::string filename = argv[1];
-    if (filename.ends_with(".sol")) filename = filename.substr(0, filename.size() - 4);
+    if (filename.ends_with(".sol")) filename.resize(filename.size() - 4);
 
     FileManager file = FileManager(filename + ".sol");
     std::vector<Token> tokens = Lexer::tokenize(file.read());

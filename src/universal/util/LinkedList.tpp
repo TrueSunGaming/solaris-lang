@@ -31,7 +31,7 @@ template <class T> std::vector<LinkedList<T> *> LinkedList<T>::getNodes(size_t s
     std::vector<LinkedList<T> *> nodes = { getNode(startDistance) };
     if (!nodes.back()) return {};
 
-    nodes.reserve(count);
+    //nodes.reserve(count);
 
     for (size_t i = 0; i < count - 1; i++) {
         if (!nodes.back()->next) break;
@@ -63,7 +63,7 @@ template <class T> std::vector<LinkedList<T> *> LinkedList<T>::getNodes(const st
 
 template <class T> std::optional<T> LinkedList<T>::getValue(size_t distance) {
     LinkedList<T> *node = getNode(distance);
-    return node ? node->value : std::nullopt;
+    return node ? std::optional(node->value) : std::nullopt;
 }
 
 template <class T> std::vector<T> LinkedList<T>::getValues(size_t startDistance, size_t count) {
@@ -84,27 +84,42 @@ template <class T> bool LinkedList<T>::setValue(size_t distance, const T& value)
     return !!node;
 }
 
-template <class T> bool LinkedList<T>::removeNode(size_t distance, bool free) {
+template <class T> std::optional<T> LinkedList<T>::removeNode(size_t distance, bool free) {
+    if (distance == 0) throw std::runtime_error("Cannot remove head of linked list");
+    
     LinkedList<T> *node = getNode(distance - 1);
 
     bool success = node && node->next;
+    std::optional<T> removedValue = std::nullopt;
     if (success) {
+        removedValue = std::move(node->next->value);
+
         LinkedList<T> *newNext = node->next->next;
         if (free) delete node->next;
         node->next = newNext;
     }
 
-    return success;
+    return std::move(removedValue);
 }
 
-template <class T> void LinkedList<T>::removeNodes(size_t distance, size_t count, bool free) {
+template <class T> std::vector<T> LinkedList<T>::removeNodes(size_t distance, size_t count, bool free) {
+    if (distance == 0) throw std::runtime_error("Cannot remove head of linked list");
+
+    std::vector<T> removedValues;
+
     LinkedList<T> *node = getNode(distance - 1);
     if (node) {
-        std::vector<LinkedList<T> *> nodes = node->getNodes(1, count - 2);
+        std::vector<LinkedList<T> *> nodes = node->getNodes(1, count);
         LinkedList<T> *newNext = nodes.back()->next;
 
-        if (free) for (const auto i : nodes) delete i;
+        for (const auto i : nodes) {
+            removedValues.push_back(std::move(i->value));
+
+            if (free) delete i;
+        }
 
         node->next = newNext;
     }
+
+    return std::move(removedValues);
 }

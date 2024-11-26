@@ -5,11 +5,11 @@
 #include <string>
 #include <stack>
 #include <optional>
-#include <map>
 #include "../../universal/assembly/Assembly.hpp"
 #include "FunctionReturnState.hpp"
 #include "../data/scope/Scope.hpp"
 #include "AbstractFunctionCaller.hpp"
+#include "TempStack.hpp"
 
 #define STEP_FUNCTION(x) step##x(const std::vector<std::string>& args)
 #define STEP_DECLARATION(x) void STEP_FUNCTION(x)
@@ -26,8 +26,7 @@ class RuntimeState : public AbstractFunctionCaller {
         std::unique_ptr<Scope> globalScope;
         Scope *activeScope = nullptr;
         std::vector<std::unique_ptr<Scope>> scopes;
-        std::vector<Object *> tempStack;
-        std::map<size_t, std::unique_ptr<Object>> tempStorage;
+        TempStack tempStack;
 
         static Instructions load(const std::string& filename);
         std::vector<Object *> parseArgs(std::vector<std::string> args);
@@ -67,6 +66,7 @@ class RuntimeState : public AbstractFunctionCaller {
         void moveTemp(std::unique_ptr<Object> obj);
         void popTemp();
         Object *getTemp(size_t idx);
+        std::vector<Object *> getTemp(const std::vector<size_t>& idxs);
         Object *getReturnObject();
         Object *getObject(const std::string& name);
         Scope *getGlobalScope();

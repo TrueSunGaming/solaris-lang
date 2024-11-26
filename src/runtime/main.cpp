@@ -14,12 +14,5 @@ int main(int argc, char *argv[]) {
     runtime.getGlobalScope()->setMember("std", stdlib);
     stdlib->moveMember("println", std::make_unique<CompiledFunction>(SolarisStdlib::println));
 
-    std::vector<Object *> v;
-    v.push_back(new Object());
-    v.push_back(new Object());
-    v.push_back(new Object());
-    v.erase(v.end() - 4, v.end() - 1);
-    v.push_back(new Object());
-
     while (true) runtime.step();
 }

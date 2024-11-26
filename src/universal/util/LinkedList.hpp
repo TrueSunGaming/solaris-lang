@@ -18,14 +18,14 @@ class LinkedList {
         std::vector<LinkedList<T> *> getNodes(size_t startDistance = 0, size_t count = SIZE_MAX);
         std::vector<LinkedList<T> *> getNodes(const std::vector<size_t>& distances);
 
-        std::optional<T> getValue(size_t distance);
+        std::optional<T> getValue(size_t distance = 0);
         std::vector<T> getValues(size_t startDistance = 0, size_t count = SIZE_MAX);
         std::vector<T> getValues(const std::vector<size_t>& distances);
 
         bool setValue(size_t distance, const T& value);
 
-        bool removeNode(size_t distance, bool free = true);
-        void removeNodes(size_t distance, size_t count = 1, bool free = true);
+        std::optional<T> removeNode(size_t distance, bool free = true);
+        std::vector<T> removeNodes(size_t distance, size_t count = 1, bool free = true);
 };
 
 #include "LinkedList.tpp"

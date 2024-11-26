@@ -69,8 +69,6 @@ RuntimeState::RuntimeState(const std::string& filename) :
             if (index >= tempSize) tempSize = index + 1;
         }
     }
-
-    tempStack.reserve(tempSize);
 }
 
 Object *RuntimeState::getObject(const std::string& name) {
@@ -149,8 +147,6 @@ size_t RuntimeState::getLine() const {
 }
 
 void RuntimeState::step() {
-    std::cout << "running " << line << "\n";
-
     if (line >= instructions.size()) return exit(0);
 
     Assembly instruction = std::get<0>(instructions[line]);
@@ -199,26 +195,27 @@ void RuntimeState::pushReturn(size_t functionID) {
 }
 
 void RuntimeState::pushTemp(Object *obj) {
-    tempStack.push_back(obj);
+    tempStack.push(obj);
 }
 
 void RuntimeState::moveTemp(Object *obj) {
-    moveTemp(std::unique_ptr<Object>(obj));
+    tempStack.move(obj);
 }
 
 void RuntimeState::moveTemp(std::unique_ptr<Object> obj) {
-    pushTemp(obj.get());
-    tempStorage[tempStack.size() - 1] = std::move(obj);
+    tempStack.move(std::move(obj));
 }
 
 void RuntimeState::popTemp() {
-    size_t len = tempStack.size();
-    if (len > 0 && tempStorage.contains(len - 1)) tempStorage.erase(len - 1);
-    tempStack.pop_back();
+    tempStack.pop();
 }
 
 Object *RuntimeState::getTemp(size_t idx) {
-    return tempStack[tempStack.size() - idx - 1];
+    return tempStack.get(idx);
+}
+
+std::vector<Object *> RuntimeState::getTemp(const std::vector<size_t>& idxs) {
+    return tempStack.get(idxs);
 }
 
 Object *RuntimeState::getReturnObject() {

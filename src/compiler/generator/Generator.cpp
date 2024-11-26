@@ -1,6 +1,6 @@
 #include "Generator.hpp"
 #include "../parser/ParseData.hpp"
-#include <iostream>
+
 
 Generator::Generator(AST *ast) : ast(ast) {}
 
@@ -91,9 +91,6 @@ std::string Generator::generateFunctionDefinition(AST *ast) {
     res += generateLine(Assembly::END_DEFINE_FUNCTION, { std::to_string(id) });
 
     for (const auto& i : ast->children[1]->children) {
-        std::cout << (int)ast->children[1]->type << "\n";
-        std::cout << (int)i->type << "\n";
-
         std::vector<std::string> args = {
             std::to_string(id),
             i->value

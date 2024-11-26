@@ -1,5 +1,4 @@
 #include "split.hpp"
-#include <iostream>
 
 std::vector<std::string> split(const std::string str, std::string delim) {
     std::vector<std::string> res;

@@ -2,7 +2,7 @@
 #include "data/function/CompiledFunction.hpp"
 #include "stdlib/println.hpp"
 #include <stdexcept>
-#include <iostream>
+
 
 int main(int argc, char *argv[]) {
     if (argc < 2) throw std::runtime_error("Please provide an assembly file as an argument");

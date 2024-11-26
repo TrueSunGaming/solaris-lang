@@ -1,5 +1,4 @@
 #include "../RuntimeState.hpp"
-#include <iostream>
 
 STEP_DEFINITION(POP_TEMP) {
     size_t delCount = args.size() >= 1 ? std::stoull(args[0]) : 1;

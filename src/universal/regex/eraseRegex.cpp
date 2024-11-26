@@ -1,7 +1,6 @@
 #include "eraseRegex.hpp"
 #include "findRegex.hpp"
 #include "excludeFromRegexMatch.hpp"
-#include <iostream>
 
 void eraseRegex(std::string& str, const std::regex& regex, const std::vector<SubstringPosition>& exclude) {
     std::vector<SubstringPosition> matches = findRegex(str, regex, exclude);

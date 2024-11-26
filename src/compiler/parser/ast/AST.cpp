@@ -1,5 +1,5 @@
 #include "AST.hpp"
-#include <iostream>
+
 
 AST::AST(ASTType type, std::string value, std::vector<std::unique_ptr<AST>> children) : value(value), children(std::move(children)), type(type) {}
 

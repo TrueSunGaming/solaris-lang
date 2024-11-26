@@ -1,6 +1,5 @@
 #include "mergeEscape.hpp"
 #include <regex>
-#include <iostream>
 
 std::string mergeEscape(const std::string& str) {
     std::string res;
@@ -24,8 +23,6 @@ std::string mergeEscape(const std::string& str) {
 
             int dec;
             ss >> dec;
-
-            std::cout << dec << "\n";
 
             res += (char)dec;
             i += 3;

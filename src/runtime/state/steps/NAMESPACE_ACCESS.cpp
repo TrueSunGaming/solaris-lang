@@ -1,5 +1,4 @@
 #include "../RuntimeState.hpp"
-#include <iostream>
 
 STEP_DEFINITION(NAMESPACE_ACCESS) {
     Object *ns = getObject(args[0]);

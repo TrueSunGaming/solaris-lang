@@ -5,7 +5,6 @@
 #include "../../universal/tokens/TokenType.hpp"
 #include "../../universal/util/scientificToNumber.hpp"
 #include "../../universal/util/mergeEscape.hpp"
-#include <iostream>
 #include <regex>
 #include <sstream>
 #include <algorithm>

@@ -23,7 +23,8 @@ namespace ParseData {
         "true",
         "false",
         "null",
-        "class"
+        "class",
+        "return"
     };
 
     const std::unordered_set<std::string> baseTypes = {

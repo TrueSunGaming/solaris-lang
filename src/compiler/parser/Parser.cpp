@@ -212,6 +212,7 @@ bool Parser::parseKeyword() {
     if (token.value == "fn") return parseFunction();
     if (token.value == "true" || token.value == "false") return parseBoolean();
     if (token.value == "null") return parseNull();
+    if (token.value == "return") return parseReturn();
 
     if (canDeclare()) {
         push(ASTType::DECLARE);
@@ -455,6 +456,14 @@ bool Parser::parseInteger() {
 bool Parser::parseNull() {
     push(ASTType::NULL_VAL);
     nested.pop();
+
+    searchPosition++;
+
+    return true;
+}
+
+bool Parser::parseReturn() {
+    push(ASTType::RETURN);
 
     searchPosition++;
 

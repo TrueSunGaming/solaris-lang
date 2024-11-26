@@ -26,5 +26,5 @@ enum class ASTType {
     TYPE,
     TYPE_MODIFIER,
     BASE_TYPE,
-    RAW
+    RETURN
 };

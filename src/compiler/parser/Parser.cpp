@@ -120,8 +120,6 @@ void Parser::wrapParent(ASTType type, std::string value) {
 }
 
 bool Parser::parseNext() {
-    std::cout << "Parsing token at " << searchPosition << " '" << tokens[searchPosition].value << "'\n";
-
     if (searchPosition >= tokens.size()) return false;
 
     const Token& token = tokens[searchPosition];
@@ -166,8 +164,6 @@ bool Parser::parseNext() {
 }
 
 bool Parser::parseIdentifier() {
-    std::cout << "Parsing identifier at " << searchPosition << "\n";
-
     const Token& token = tokens[searchPosition];
     AST& parent = *nested.top();
     const bool isKeyword = ParseData::keywords.contains(token.value);
@@ -207,8 +203,6 @@ bool Parser::parseIdentifier() {
 }
 
 bool Parser::parseKeyword() {
-    std::cout << "Parsing keyword at " << searchPosition << "\n";
-
     const Token& token = tokens[searchPosition];
 
     if (!ParseData::keywords.contains(token.value)) {
@@ -228,8 +222,6 @@ bool Parser::parseKeyword() {
 }
 
 bool Parser::parseFunction() {
-    std::cout << "Parsing function definition at " << searchPosition << "\n";
-
     push(ASTType::DEFINE_FUNCTION);
     push(ASTType::TYPE);
 
@@ -239,8 +231,6 @@ bool Parser::parseFunction() {
 }
 
 bool Parser::parseType() {
-    std::cout << "Parsing type at " << searchPosition << "\n";
-
     AST& type = *nested.top();
 
     const std::unordered_set<TokenType> typeTokenTypes = {
@@ -305,13 +295,11 @@ bool Parser::parseType() {
 }
 
 bool Parser::parseOpenParenthesis() {
-    std::cout << "Parsing open parenthesis at " << searchPosition << "\n";
-
     const AST& parent = *nested.top();
 
     if (parent.type == ASTType::DEFINE_FUNCTION) {
         push(ASTType::ARGUMENT_LIST);
-        push(ASTType::DECLARE);
+        if (tokens[searchPosition + 1].type != TokenType::PARENTHESIS_CLOSE) push(ASTType::DECLARE);
         searchPosition++;
 
         return true;
@@ -323,8 +311,6 @@ bool Parser::parseOpenParenthesis() {
 }
 
 bool Parser::parseCloseParenthesis() {
-    std::cout << "Parsing close parenthesis at " << searchPosition << "\n";
-
     const AST& parent = *nested.top();
 
     if (parent.type == ASTType::ARGUMENT_LIST || parent.type == ASTType::CALL_ARGUMENTS) {
@@ -344,8 +330,6 @@ bool Parser::parseCloseParenthesis() {
 }
 
 bool Parser::parseDeclaration() {
-    std::cout << "Parsing declaration at " << searchPosition << "\n";
-
     AST& parent = *nested.top();
 
     if (parent.children.size() == 0) {
@@ -362,8 +346,6 @@ bool Parser::parseDeclaration() {
 }
 
 bool Parser::parseComma() {
-    std::cout << "Parsing comma at " << searchPosition << "\n";
-
     const AST& parent = *nested.top();
 
     if (parent.type == ASTType::ARGUMENT_LIST) {
@@ -383,14 +365,10 @@ bool Parser::parseComma() {
 }
 
 bool Parser::parseOpenCurly() {
-    std::cout << "Parsing open curly at " << searchPosition << "\n";
-
     return parseBlock();
 }
 
 bool Parser::parseCloseCurly() {
-    std::cout << "Parsing close curly at " << searchPosition << "\n";
-
     const AST& parent = *nested.top();
 
     if (parent.type == ASTType::BLOCK) {
@@ -405,8 +383,6 @@ bool Parser::parseCloseCurly() {
 }
 
 bool Parser::parseBlock() {
-    std::cout << "Parsing block at " << searchPosition << "\n";
-
     push(ASTType::BLOCK);
     searchPosition++;
     
@@ -414,8 +390,6 @@ bool Parser::parseBlock() {
 }
 
 bool Parser::parseOperator() {
-    std::cout << "Parsing operator at " << searchPosition << "\n";
-
     nested.push(nested.top()->children.back().get());
     wrapParent(ASTType::OPERATION, tokens[searchPosition].value);
     nested.pop();
@@ -425,8 +399,6 @@ bool Parser::parseOperator() {
 }
 
 bool Parser::parseEOL() {
-    std::cout << "Parsing EOL at " << searchPosition << "\n";
-
     while (!ParseData::eolBack.contains(nested.top()->type)) nested.pop();
     searchPosition++;
 
@@ -434,8 +406,6 @@ bool Parser::parseEOL() {
 }
 
 bool Parser::parseCall() {
-    std::cout << "Parsing call at " << searchPosition << "\n";
-
     wrapParent(ASTType::CALL);
     nested.pop();
     push(ASTType::CALL_ARGUMENTS);
@@ -445,8 +415,6 @@ bool Parser::parseCall() {
 }
 
 bool Parser::parseString() {
-    std::cout << "Parsing string at " << searchPosition << "\n";
-
     push(ASTType::STRING, tokens[searchPosition].value.substr(1, tokens[searchPosition].value.size() - 2));
     nested.pop();
 
@@ -456,8 +424,6 @@ bool Parser::parseString() {
 }
 
 bool Parser::parseBoolean() {
-    std::cout << "Parsing boolean at " << searchPosition << "\n";
-
     push(ASTType::BOOLEAN, tokens[searchPosition].value);
     nested.pop();
 
@@ -467,8 +433,6 @@ bool Parser::parseBoolean() {
 }
 
 bool Parser::parseFloat() {
-    std::cout << "Parsing float at " << searchPosition << "\n";
-
     push(ASTType::FLOAT, tokens[searchPosition].value);
     nested.pop();
 
@@ -478,8 +442,6 @@ bool Parser::parseFloat() {
 }
 
 bool Parser::parseInteger() {
-    std::cout << "Parsing integer at " << searchPosition << "\n";
-
     push(ASTType::INTEGER, tokens[searchPosition].value);
     nested.pop();
 
@@ -489,8 +451,6 @@ bool Parser::parseInteger() {
 }
 
 bool Parser::parseNull() {
-    std::cout << "Parsing null at " << searchPosition << "\n";
-
     push(ASTType::NULL_VAL);
     nested.pop();
 
@@ -511,6 +471,5 @@ void Parser::parseAll(size_t limit) {
 std::unique_ptr<AST> Parser::parse(std::vector<Token> tokens) {
     Parser parser = Parser(tokens);
     parser.parseAll();
-    std::cout << "parent: " << parser.nested.top()->getID() << "\n";
     return std::move(parser.ast);
 }

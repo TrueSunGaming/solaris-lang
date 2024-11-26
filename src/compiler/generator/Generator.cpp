@@ -25,6 +25,8 @@ std::vector<std::string> Generator::generateTypeRecursive(AST *ast) {
 }
 
 std::string Generator::generateRecursive(AST *ast) {
+    if (!ast) return "";
+
     std::string res = "";
 
     switch (ast->type) {
@@ -76,6 +78,8 @@ std::string Generator::generateRecursive(AST *ast) {
 }
 
 std::string Generator::generateFunctionDefinition(AST *ast) {
+    if (ast->children.size() < 3) throw std::runtime_error("Function definition requires 3 AST children");
+
     size_t id = nextID++;
 
     std::string res = generateLine(Assembly::DEFINE_FUNCTION, {
@@ -87,6 +91,9 @@ std::string Generator::generateFunctionDefinition(AST *ast) {
     res += generateLine(Assembly::END_DEFINE_FUNCTION, { std::to_string(id) });
 
     for (const auto& i : ast->children[1]->children) {
+        std::cout << (int)ast->children[1]->type << "\n";
+        std::cout << (int)i->type << "\n";
+
         std::vector<std::string> args = {
             std::to_string(id),
             i->value

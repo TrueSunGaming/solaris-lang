@@ -196,7 +196,6 @@ bool Parser::parseIdentifier() {
     }
 
     push(ASTType::GET, token.value);
-    nested.pop();
     searchPosition++;
 
     return true;
@@ -339,7 +338,6 @@ bool Parser::parseDeclaration() {
     }
 
     parent.value = tokens[searchPosition].value;
-    nested.pop();
 
     searchPosition++;
 
@@ -347,6 +345,8 @@ bool Parser::parseDeclaration() {
 }
 
 bool Parser::parseComma() {
+    AST& grandparent = *nested.top();
+    nested.pop();
     const AST& parent = *nested.top();
 
     if (parent.type == ASTType::ARGUMENT_LIST) {
@@ -361,6 +361,8 @@ bool Parser::parseComma() {
 
         return true;
     }
+
+    nested.push(&grandparent);
 
     return false;
 }
@@ -393,7 +395,6 @@ bool Parser::parseBlock() {
 }
 
 bool Parser::parseOperator() {
-    nested.push(nested.top()->children.back().get());
     wrapParent(ASTType::OPERATION, tokens[searchPosition].value);
     nested.pop();
     searchPosition++;
@@ -419,7 +420,6 @@ bool Parser::parseCall() {
 
 bool Parser::parseString() {
     push(ASTType::STRING, tokens[searchPosition].value.substr(1, tokens[searchPosition].value.size() - 2));
-    nested.pop();
 
     searchPosition++;
 
@@ -428,7 +428,6 @@ bool Parser::parseString() {
 
 bool Parser::parseBoolean() {
     push(ASTType::BOOLEAN, tokens[searchPosition].value);
-    nested.pop();
 
     searchPosition++;
 
@@ -437,7 +436,6 @@ bool Parser::parseBoolean() {
 
 bool Parser::parseFloat() {
     push(ASTType::FLOAT, tokens[searchPosition].value);
-    nested.pop();
 
     searchPosition++;
 
@@ -446,7 +444,6 @@ bool Parser::parseFloat() {
 
 bool Parser::parseInteger() {
     push(ASTType::INTEGER, tokens[searchPosition].value);
-    nested.pop();
 
     searchPosition++;
 
@@ -455,7 +452,6 @@ bool Parser::parseInteger() {
 
 bool Parser::parseNull() {
     push(ASTType::NULL_VAL);
-    nested.pop();
 
     searchPosition++;
 

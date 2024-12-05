@@ -15,19 +15,21 @@ CFUNC(SolarisStdlib::println, runtime, args) {
                 break;
             
             case ValueType::FLOAT:
-                std::cout << obj->getValueAs<double>();
+                std::cout << std::to_string(obj->getValueAs<double>());
                 break;
             
-            case ValueType::BOOLEAN:
-                std::cout << obj->getValueAs<bool>();
+            case ValueType::BOOLEAN: {
+                bool val = obj->getValueAs<bool>();
+                std::cout << (val ? "true" : "false");
                 break;
+            }
             
             case ValueType::NULL_VAL:
                 std::cout << "null";
                 break;
             
             default:
-                std::cout << "[Object (type " << (int)obj->getType() << ")]";
+                std::cout << "[Object " << obj << " (type " << (int)obj->getType() << ")]";
         }
 
         if (i != args.size() - 1) std::cout << " ";

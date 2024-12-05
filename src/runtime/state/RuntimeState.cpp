@@ -75,6 +75,10 @@ Object *RuntimeState::getObject(const std::string& name) {
     return getCurrentScope()->findAndGetMember(name, globalScope.get());
 }
 
+void RuntimeState::setObject(const std::string& name, Object *value) {
+    getCurrentScope()->setMember(name, value);
+}
+
 std::unique_ptr<Object> RuntimeState::createObject(const std::string& val) {
     if (val.starts_with("\"") || val.starts_with("'")) {
         return std::make_unique<Object>(ValueType::STRING, new std::string(mergeEscape(val.substr(1, val.size() - 2))));
@@ -87,6 +91,9 @@ std::unique_ptr<Object> RuntimeState::createObject(const std::string& val) {
     if (std::regex_match(val, std::regex(tokenRegexMap.at(TokenType::INTEGER)))) {
         return std::make_unique<Object>(ValueType::INTEGER, new int64_t(scientificToNumber<int64_t>(val)));
     }
+
+    if (val == "true") return std::make_unique<Object>(ValueType::BOOLEAN, new bool(true));
+    if (val == "false") return std::make_unique<Object>(ValueType::BOOLEAN, new bool(false));
 
     throw std::runtime_error("Failed to create object from value: " + val);
 }
@@ -129,6 +136,13 @@ Scope *RuntimeState::getCurrentScope() {
 
 Scope *RuntimeState::getGlobalScope() {
     return globalScope.get();
+}
+
+void RuntimeState::createScope() {
+    std::unique_ptr<Scope> scope = std::make_unique<Scope>();
+    scope->parent = activeScope;
+    activeScope = scope.get();
+    scopes.push_back(std::move(scope));
 }
 
 std::vector<Object *> RuntimeState::parseArgs(std::vector<std::string> args) {
@@ -185,6 +199,12 @@ void RuntimeState::ret() {
 
     FunctionReturnState data = returnStack.top();
     returnStack.pop();
+
+    Scope *scope = activeScope;
+    activeScope = scope->parent;
+    scopes.erase(std::find_if(scopes.begin(), scopes.end(), [scope] (std::unique_ptr<Scope>& v) {
+        return v.get() == scope;
+    }));
 
     jump(data.line);
 }

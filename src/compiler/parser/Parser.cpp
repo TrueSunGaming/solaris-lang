@@ -102,7 +102,7 @@ size_t Parser::getTypeLength() const {
 
 bool Parser::canDeclare() const {
     size_t typeLength = getTypeLength();
-    return typeLength && ParseData::eolBack.contains(nested.top()->type) && tokens[searchPosition + typeLength].type != TokenType::OPERATOR;
+    return typeLength && ParseData::eolBack.contains(nested.top()->type) && !ParseData::invalidAfterDeclaration.contains(tokens[searchPosition + typeLength].type);
 }
 
 void Parser::push(ASTType type, std::string value) {
@@ -123,6 +123,7 @@ bool Parser::parseNext() {
     if (searchPosition >= tokens.size()) return false;
 
     const Token& token = tokens[searchPosition];
+    std::cout << "parsing token '" << token.value << "'\n";
 
     switch (token.type) {
         case TokenType::EOL:
@@ -313,7 +314,7 @@ bool Parser::parseOpenParenthesis() {
 bool Parser::parseCloseParenthesis() {
     const AST& parent = *nested.top();
 
-    if (parent.type == ASTType::ARGUMENT_LIST || parent.type == ASTType::CALL_ARGUMENTS) {
+    if (parent.type == ASTType::ARGUMENT_LIST || parent.type == ASTType::CALL_ARGUMENTS || parent.type == ASTType::GET) {
         nested.pop();
         searchPosition++;
 

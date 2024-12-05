@@ -19,6 +19,7 @@ class Object {
         std::vector<Object *> iterableMembers = {};
 
         void freeMembers();
+        void *cloneValue();
 
     public:
         Object() = default;
@@ -55,7 +56,9 @@ class Object {
         void pushMove(Object *value);
         void pushMove(std::unique_ptr<Object> value);
 
+        std::unique_ptr<Object> clone();
+
         Object *pop();
 
-        Object& operator=(const Object *other);
+        Object& operator=(Object *other);
 };

@@ -69,8 +69,10 @@ class RuntimeState : public AbstractFunctionCaller {
         std::vector<Object *> getTemp(const std::vector<size_t>& idxs);
         Object *getReturnObject();
         Object *getObject(const std::string& name);
+        void setObject(const std::string& name, Object *value) override;
         Scope *getGlobalScope();
         Scope *getCurrentScope();
+        void createScope() override;
 
         SolarisFunction *getFunction(size_t id);
 };

@@ -69,6 +69,14 @@ std::string Generator::generateRecursive(AST *ast) {
             for (const auto& i : generateTypeRecursive(ast->children[0].get())) args.push_back(i);
 
             res += generateLine(Assembly::DECLARE, args);
+            break;
+        }
+
+        case ASTType::RETURN: {
+            if (ast->children.size() > 0) res += generateRecursive(ast->children[0].get());
+            res += generateLine(Assembly::RETURN);
+            
+            break;
         }
     }
 
@@ -121,7 +129,10 @@ std::string Generator::generateFunctionCall(AST *ast) {
     if (usingTemp) res += generateRecursive(ast->children[0].get());
 
     res += generateLine(Assembly::CALL, args);
-    if (usingTemp || argAST.size()) res += generateLine(Assembly::POP_TEMP, { std::to_string(size_t(usingTemp) + argAST.size()), "0" });
+    if (usingTemp || argAST.size()) {
+        std::string& returnType = ast->children[0]->value;
+        res += generateLine(Assembly::POP_TEMP, { std::to_string(size_t(usingTemp) + argAST.size()), returnType == "void" ? "0" : "1" });
+    }
 
     return res;
 }

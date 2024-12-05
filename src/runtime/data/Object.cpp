@@ -75,7 +75,7 @@ void Object::resetValue(bool freeOld) {
             break;
         
         case ValueType::INTEGER:
-            setValue(new int(0), freeOld);
+            setValue(new int64_t(0), freeOld);
             break;
         
         case ValueType::FLOAT:
@@ -177,9 +177,39 @@ Object *Object::pop() {
     return res;
 }
 
-Object& Object::operator=(const Object *other) {
+void *Object::cloneValue() {
+    switch (type) {
+        case ValueType::STRING:
+            return new std::string(*static_cast<std::string *>(raw));
+            break;
+        
+        case ValueType::INTEGER:
+            return new int64_t(*static_cast<int64_t *>(raw));
+            break;
+        
+        case ValueType::FLOAT:
+            return new float(*static_cast<float *>(raw));
+            break;
+        
+        case ValueType::BOOLEAN:
+            return new bool(*static_cast<bool *>(raw));
+            break;
+        
+        default:
+            return nullptr;
+    }
+}
+
+std::unique_ptr<Object> Object::clone() {
+    std::unique_ptr<Object> obj = std::make_unique<Object>();
+    *obj = this;
+    return std::move(obj);
+}
+
+Object& Object::operator=(Object *other) {
     type = other->type;
-    raw = other->raw;
+    raw = other->cloneValue();
+
     freeMembers();
 
     iterableMembers.reserve(other->iterableMembers.size());

@@ -1,4 +1,5 @@
 #include "TempStack.hpp"
+#include <iostream>
 
 void TempStack::push(Object *value) {
     LinkedList<Object *> *oldHead = head;

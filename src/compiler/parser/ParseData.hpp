@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast/ASTType.hpp"
+#include "../lexer/Token.hpp"
 #include <string>
 #include <unordered_set>
 
@@ -63,5 +64,10 @@ namespace ParseData {
         ASTType::DO_WHILE,
         ASTType::FOR,
         ASTType::CONDITIONAL
+    };
+
+    const std::unordered_set<TokenType> invalidAfterDeclaration = {
+        TokenType::OPERATOR,
+        TokenType::PARENTHESIS_OPEN
     };
 }

@@ -42,6 +42,8 @@ class Parser {
         bool parseInteger();
         bool parseNull();
         bool parseReturn();
+        bool parseIf();
+        bool parseElse();
 
         void wrapParent(ASTType type = ASTType::BLOCK, std::string value = "");
         void push(ASTType type = ASTType::BLOCK, std::string value = "");

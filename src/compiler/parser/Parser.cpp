@@ -210,6 +210,8 @@ bool Parser::parseKeyword() {
     }
 
     if (token.value == "fn") return parseFunction();
+    if (token.value == "if") return parseIf();
+    if (token.value == "else") return parseElse();
     if (token.value == "true" || token.value == "false") return parseBoolean();
     if (token.value == "null") return parseNull();
     if (token.value == "return") return parseReturn();
@@ -306,6 +308,11 @@ bool Parser::parseOpenParenthesis() {
         return true;
     }
 
+    if (parent.type == ASTType::CONDITIONAL) {
+        searchPosition++;
+        return true;
+    }
+
     if (ParseData::callable.contains(parent.type)) return parseCall();
 
     return false;
@@ -314,17 +321,20 @@ bool Parser::parseOpenParenthesis() {
 bool Parser::parseCloseParenthesis() {
     const AST& parent = *nested.top();
 
-    if (parent.type == ASTType::ARGUMENT_LIST || parent.type == ASTType::CALL_ARGUMENTS || parent.type == ASTType::GET) {
+    if (ParseData::values.contains(parent.type)) {
         nested.pop();
-        searchPosition++;
-
         return true;
     }
 
-    if (parent.type == ASTType::DECLARE) {
-        nested.pop();
+    if (parent.type == ASTType::CONDITIONAL) {
+        searchPosition++;
+        return true;
+    }
 
-        return nested.top()->type == ASTType::ARGUMENT_LIST;
+    if (parent.type == ASTType::ARGUMENT_LIST || parent.type == ASTType::CALL_ARGUMENTS) {
+        nested.pop();
+        searchPosition++;
+        return true;
     }
 
     return false;
@@ -461,6 +471,27 @@ bool Parser::parseNull() {
 
 bool Parser::parseReturn() {
     push(ASTType::RETURN);
+
+    searchPosition++;
+
+    return true;
+}
+
+bool Parser::parseIf() {
+    push(ASTType::CONDITIONAL);
+
+    searchPosition++;
+
+    return true;
+}
+
+bool Parser::parseElse() {
+    const AST& parent = *nested.top();
+    if (parent.children.size() == 0) return pushError("SyntaxError: Unexpected else");
+
+    AST *conditional = parent.children.back().get();
+    if (conditional->type != ASTType::CONDITIONAL || conditional->children.size() != 2) return pushError("SyntaxError: Unexpected else");
+    nested.push(conditional);
 
     searchPosition++;
 

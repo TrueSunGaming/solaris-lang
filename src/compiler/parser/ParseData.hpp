@@ -4,6 +4,7 @@
 #include "../lexer/Token.hpp"
 #include <string>
 #include <unordered_set>
+#include <set>
 
 namespace ParseData {
     const std::unordered_set<std::string> keywords = {
@@ -46,17 +47,17 @@ namespace ParseData {
         "::"
     };
 
-    const std::unordered_set<ASTType> eolBack = {
+    const std::set<ASTType> eolBack = {
         ASTType::ROOT,
         ASTType::BLOCK
     };
 
-    const std::unordered_set<ASTType> callable = {
+    const std::set<ASTType> callable = {
         ASTType::GET,
         ASTType::OPERATION
     };
 
-    const std::unordered_set<ASTType> blockParent = {
+    const std::set<ASTType> blockParent = {
         ASTType::DEFINE_FUNCTION,
         ASTType::DEFINE_CLASS,
         ASTType::WHILE,
@@ -65,8 +66,21 @@ namespace ParseData {
         ASTType::CONDITIONAL
     };
 
-    const std::unordered_set<TokenType> invalidAfterDeclaration = {
+    const std::set<TokenType> invalidAfterDeclaration = {
         TokenType::OPERATOR,
         TokenType::PARENTHESIS_OPEN
+    };
+
+    const std::set<ASTType> values = {
+        ASTType::GET,
+        ASTType::INTEGER,
+        ASTType::FLOAT,
+        ASTType::STRING,
+        ASTType::BOOLEAN,
+        ASTType::OPERATION,
+        ASTType::NULL_VAL,
+        ASTType::CALL,
+        ASTType::DECLARE,
+        ASTType::LIST
     };
 }

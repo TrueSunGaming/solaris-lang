@@ -7,6 +7,7 @@ im bored lol
 * [ ] Parser
 * [ ] Compiler
 * [ ] Runtime
+* [ ] Standard Library
 * [ ] VSCode Extension
 * [ ] Package Manager
 

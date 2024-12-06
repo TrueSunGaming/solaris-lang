@@ -1,11 +1,8 @@
 #pragma once
 
-#include <vector>
-#include <tuple>
-#include <string>
 #include <stack>
 #include <optional>
-#include "../../universal/assembly/Assembly.hpp"
+#include "../../universal/assembly/Instruction.hpp"
 #include "FunctionReturnState.hpp"
 #include "../data/scope/Scope.hpp"
 #include "AbstractFunctionCaller.hpp"
@@ -18,9 +15,7 @@
 
 class RuntimeState : public AbstractFunctionCaller {
     private:
-        typedef std::vector<std::tuple<Assembly, std::vector<std::string>>> Instructions;
-
-        Instructions instructions;
+        std::vector<Instruction> instructions;
         std::stack<FunctionReturnState> returnStack;
         size_t line = 0;
         std::unique_ptr<Scope> globalScope;
@@ -28,7 +23,7 @@ class RuntimeState : public AbstractFunctionCaller {
         std::vector<std::unique_ptr<Scope>> scopes;
         TempStack tempStack;
 
-        static Instructions load(const std::string& filename);
+        static std::vector<Instruction> load(const std::string& filename);
         std::vector<Object *> parseArgs(std::vector<std::string> args);
 
         std::unique_ptr<Object> createObject(const std::string& val);

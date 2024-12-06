@@ -14,12 +14,12 @@
         step##x(args); \
         break;
 
-RuntimeState::Instructions RuntimeState::load(const std::string& filename) {
+std::vector<Instruction> RuntimeState::load(const std::string& filename) {
     FileManager file = FileManager(filename);
     std::string content = file.read();
     std::vector<std::string> lines = split(content, "\n");
 
-    Instructions res;
+    std::vector<Instruction> res;
     
     for (const auto& i : lines) {
         std::vector<std::string> parts;

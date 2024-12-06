@@ -1,30 +1,29 @@
 #pragma once
 
-#include "../../universal/assembly/Assembly.hpp"
+#include "../../universal/assembly/Instruction.hpp"
 #include "../parser/ast/AST.hpp"
-#include <string>
 #include <memory>
-#include <vector>
-#include <tuple>
 
 class Generator {
     private:
         size_t nextID = 0;
         AST *ast;
+        std::vector<Instruction> res;
 
-        static std::string generateLine(Assembly type, const std::vector<std::string>& args = {});
+        static std::string generateLine(Instruction instruction);
         static std::string generateType(std::string type);
         std::vector<std::string> generateTypeRecursive(AST *ast);
-        std::string generateRecursive(AST *ast);
-        std::string generateFunctionDefinition(AST *ast);
-        std::string generateFunctionCall(AST *ast);
-        std::string generateOperation(AST *ast);
-        std::string generateNamespaceAccess(AST *ast);
+        std::vector<Instruction> generateRecursive(AST *ast);
+        std::vector<Instruction> generateFunctionDefinition(AST *ast);
+        std::vector<Instruction> generateFunctionCall(AST *ast);
+        std::vector<Instruction> generateOperation(AST *ast);
+        std::vector<Instruction> generateNamespaceAccess(AST *ast);
+        std::vector<Instruction> generateRoot();
+        std::string toString() const;
     
     public:
         Generator(AST *ast);
         ~Generator() = default;
 
         static std::string generate(AST *ast);
-        std::string generateRoot();
 };

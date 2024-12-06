@@ -15,5 +15,7 @@ enum class Assembly {
     MODULO,
     EXPONENT,
     SET,
+    JUMP,
+    BRANCH_IF,
     ASSEMBLY_MAX
 };

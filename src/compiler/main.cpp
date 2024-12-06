@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     std::vector<Token> tokens = Lexer::tokenize(file.read());
     std::unique_ptr<AST> ast = Parser::parse(tokens);
     if (flags.contains("ast")) std::cout << ast->toString();
-    std::string assembly = Generator::generate(ast.get());
+    std::string assembly = Generator::generate(ast.get(), flags.contains("read-asm"));
     
     FileManager output = FileManager(filename + ".solex");
     output.write(assembly);

@@ -17,7 +17,6 @@ namespace ParseData {
         "void",
         "if",
         "else",
-        "elif",
         "while",
         "for",
         "do",

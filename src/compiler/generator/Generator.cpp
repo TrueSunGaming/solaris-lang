@@ -1,11 +1,18 @@
 #include "Generator.hpp"
 #include "../parser/ParseData.hpp"
 #include "../../universal/util/concat.hpp"
+#include <iostream>
 
 Generator::Generator(AST *ast) : ast(ast) {}
 
-std::string Generator::generateLine(Instruction instruction) {
+std::string Generator::generateLine(const Instruction& instruction) {
     std::string line = std::to_string((int)std::get<0>(instruction));
+    for (const auto& i : std::get<1>(instruction)) line += " " + i;
+    return line + "\n";
+}
+
+std::string Generator::generateDebugLine(const Instruction& instruction) {
+    std::string line = instructionNames.at(std::get<0>(instruction));
     for (const auto& i : std::get<1>(instruction)) line += " " + i;
     return line + "\n";
 }
@@ -178,8 +185,15 @@ std::string Generator::toString() const {
     return str;
 }
 
-std::string Generator::generate(AST *ast) {
+std::string Generator::toDebugString() const {
+    std::string str;
+    for (const auto& i : res) str += generateDebugLine(i);
+    return str;
+}
+
+std::string Generator::generate(AST *ast, bool debug) {
     Generator gen = Generator(ast);
     concat(gen.res, gen.generateRoot());
+    if (debug) std::cout << gen.toDebugString();
     return gen.toString();
 }

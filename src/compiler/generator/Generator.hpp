@@ -10,7 +10,8 @@ class Generator {
         AST *ast;
         std::vector<Instruction> res;
 
-        static std::string generateLine(Instruction instruction);
+        static std::string generateLine(const Instruction& instruction);
+        static std::string generateDebugLine(const Instruction& instruction);
         static std::string generateType(std::string type);
         std::vector<std::string> generateTypeRecursive(AST *ast);
         std::vector<Instruction> generateRecursive(AST *ast);
@@ -20,10 +21,11 @@ class Generator {
         std::vector<Instruction> generateNamespaceAccess(AST *ast);
         std::vector<Instruction> generateRoot();
         std::string toString() const;
+        std::string toDebugString() const;
     
     public:
         Generator(AST *ast);
         ~Generator() = default;
 
-        static std::string generate(AST *ast);
+        static std::string generate(AST *ast, bool debug = false);
 };

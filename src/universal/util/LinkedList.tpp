@@ -1,4 +1,6 @@
 #include "LinkedList.hpp"
+#include <algorithm>
+#include <stdexcept>
 
 template <class T> LinkedList<T>::LinkedList(const T& value) : value(value) {}
 template <class T> LinkedList<T>::LinkedList(const T& value, LinkedList<T> *next) : value(value), next(next) {}

@@ -19,6 +19,7 @@ class Generator {
         std::vector<Instruction> generateFunctionCall(AST *ast);
         std::vector<Instruction> generateOperation(AST *ast);
         std::vector<Instruction> generateNamespaceAccess(AST *ast);
+        std::vector<Instruction> generateConditional(AST *ast);
         std::vector<Instruction> generateRoot();
         std::string toString() const;
         std::string toDebugString() const;

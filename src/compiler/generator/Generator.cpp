@@ -85,6 +85,10 @@ std::vector<Instruction> Generator::generateRecursive(AST *ast) {
             
             break;
         }
+
+        case ASTType::CONDITIONAL:
+            concat(instructions, generateConditional(ast));
+            break;
     }
 
     if (ast->type == ASTType::ROOT) instructions.push_back({ Assembly::CALL, { "main" } });
@@ -171,6 +175,42 @@ std::vector<Instruction> Generator::generateNamespaceAccess(AST *ast) {
     std::vector<Instruction> instructions = generateRecursive(ast->children[0].get());
     instructions.push_back({ Assembly::NAMESPACE_ACCESS, { "%tmp0", "\"" + ast->children[1]->value + "\"" } });
     instructions.push_back({ Assembly::POP_TEMP, { "1", "1" } });
+
+    return instructions;
+}
+
+std::vector<Instruction> Generator::generateConditional(AST *ast) {
+    if (ast->children.size() < 2) throw std::runtime_error("Conditional must have at least 2 children");
+
+    std::vector<Instruction> instructions;
+
+    std::vector<Instruction> condition = generateRecursive(ast->children[0].get());
+    std::vector<Instruction> trueBlock = generateRecursive(ast->children[1].get());
+    std::vector<Instruction> falseBlock = ast->children.size() > 2 ? generateRecursive(ast->children[2].get()) : std::vector<Instruction>();
+
+    size_t trueSize = trueBlock.size() + 1;
+    size_t falseSize = falseBlock.size() + (falseBlock.size() > 0 ? 1 : 0);
+    size_t jumpLength = trueSize + falseSize + 1;
+    instructions.push_back({ Assembly::JUMP, { std::to_string(jumpLength) } });
+
+    concat(instructions, trueBlock);
+    instructions.push_back({ Assembly::RETURN, {} });
+
+    if (falseBlock.size()) {
+        concat(instructions, falseBlock);
+        instructions.push_back({ Assembly::RETURN, {} });
+    }
+
+    concat(instructions, condition);
+
+    std::vector<std::string> args = {
+        "%tmp0",
+        std::to_string(-(int64_t)condition.size() - (int64_t)trueSize - (int64_t)falseSize),
+        falseSize ? std::to_string(-(int64_t)condition.size() - (int64_t)falseSize) : "0"
+    };
+
+    instructions.push_back({ Assembly::BRANCH_IF, args });
+    instructions.push_back({ Assembly::POP_TEMP, { "1", "0" } });
 
     return instructions;
 }

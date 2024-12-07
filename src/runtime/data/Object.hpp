@@ -39,6 +39,7 @@ class Object {
 
         bool is(ValueType type) const;
         bool is(const std::set<ValueType> &types) const;
+        bool isTruthy() const;
 
         Object *getMember(const std::string& name);
         void setMember(const std::string& name, Object *value);

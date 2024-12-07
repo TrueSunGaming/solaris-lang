@@ -105,6 +105,28 @@ bool Object::is(const std::set<ValueType> &types) const {
     return types.contains(type);
 }
 
+bool Object::isTruthy() const {
+    switch(getType()) {
+        case ValueType::NULL_VAL:
+            return false;
+
+        case ValueType::BOOLEAN:
+            return getValueAs<bool>();
+        
+        case ValueType::INTEGER:
+            return getValueAs<int64_t>() != 0;
+        
+        case ValueType::FLOAT:
+            return getValueAs<double>() != 0.0;
+        
+        case ValueType::STRING:
+            return !getValueAs<std::string>().empty();
+        
+        default:
+            return true;
+    }
+}
+
 Object *Object::getMember(const std::string& name) {
     if (!members.contains(name)) return nullptr;
     return members.at(name);

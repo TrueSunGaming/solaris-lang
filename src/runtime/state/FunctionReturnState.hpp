@@ -1,6 +1,8 @@
 #pragma once
 
+#include <optional>
+
 struct FunctionReturnState {
-    size_t functionID;
+    std::optional<size_t> functionID;
     size_t line;
 };

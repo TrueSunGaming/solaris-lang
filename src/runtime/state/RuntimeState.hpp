@@ -15,21 +15,23 @@
 
 class RuntimeState : public AbstractFunctionCaller {
     private:
+        bool debug;
+
         std::vector<Instruction> instructions;
         std::stack<FunctionReturnState> returnStack;
         size_t line = 0;
-        std::unique_ptr<Scope> globalScope;
+        std::unique_ptr<Scope> globalScope = std::make_unique<Scope>();
         Scope *activeScope = nullptr;
         std::vector<std::unique_ptr<Scope>> scopes;
         TempStack tempStack;
 
         static std::vector<Instruction> load(const std::string& filename);
-        std::vector<Object *> parseArgs(std::vector<std::string> args);
+        std::vector<Object *> parseArgs(const std::vector<std::string>& args);
 
         std::unique_ptr<Object> createObject(const std::string& val);
         Object *getOrCreateObject(const std::string& val, std::vector<std::unique_ptr<Object>>& created);
         
-        ValueType determineType(const std::vector<std::string>& args) const;
+        static ValueType determineType(const std::vector<std::string>& args);
 
         STEP_DECLARATION(DECLARE);
         STEP_DECLARATION(PUSH_TEMP);
@@ -47,15 +49,18 @@ class RuntimeState : public AbstractFunctionCaller {
         STEP_DECLARATION(MODULO);
         STEP_DECLARATION(EXPONENT);
         STEP_DECLARATION(SET);
+        STEP_DECLARATION(JUMP);
+        STEP_DECLARATION(BRANCH_IF);
         
     public:
-        RuntimeState(const std::string& filename);
+        RuntimeState(const std::string& filename, bool debug = false);
 
         size_t getLine() const;
         void step();
         void jump(size_t line) override;
+        void jumpForward(int64_t offset);
         void ret();
-        void pushReturn(size_t functionID) override;
+        void pushReturn(std::optional<size_t> functionID = std::nullopt) override;
         void pushTemp(Object *obj);
         void moveTemp(Object *obj);
         void moveTemp(std::unique_ptr<Object> obj);

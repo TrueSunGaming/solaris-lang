@@ -1,4 +1,5 @@
 #include "../RuntimeState.hpp"
+#include "../../stdlib/println.hpp"
 
 STEP_DEFINITION(CALL) {
     if (args.size() < 1) throw std::runtime_error("Assembly Syntax Error: No function provided to call");
@@ -13,4 +14,6 @@ STEP_DEFINITION(CALL) {
     }
 
     fn->call(this, parsedArgs);
+
+    if (args[0] == "test") SolarisStdlib::println(this, { getObject("x") });
 }

@@ -8,6 +8,7 @@
 #include <regex>
 #include <sstream>
 #include <algorithm>
+#include <iostream>
 
 #define CASE_STEP(x) \
     case Assembly::x: \
@@ -54,9 +55,9 @@ std::vector<Instruction> RuntimeState::load(const std::string& filename) {
     return res;
 }
 
-RuntimeState::RuntimeState(const std::string& filename) :
-    instructions(load(filename)),
-    globalScope(std::make_unique<Scope>()) {
+RuntimeState::RuntimeState(const std::string& filename, bool debug) :
+    debug(debug),
+    instructions(load(filename)) {
     
     size_t tempSize = 0;
 
@@ -112,7 +113,7 @@ Object *RuntimeState::getOrCreateObject(const std::string& val, std::vector<std:
     return obj;
 }
 
-ValueType RuntimeState::determineType(const std::vector<std::string>& args) const {
+ValueType RuntimeState::determineType(const std::vector<std::string>& args) {
     if (std::find_if(args.begin(), args.end(), [](const std::string& v) {
         return v == "array";
     }) != args.end()) return ValueType::ARRAY;
@@ -145,7 +146,7 @@ void RuntimeState::createScope() {
     scopes.push_back(std::move(scope));
 }
 
-std::vector<Object *> RuntimeState::parseArgs(std::vector<std::string> args) {
+std::vector<Object *> RuntimeState::parseArgs(const std::vector<std::string>& args) {
     std::vector<Object *> res;
     for (const auto& i : args) {
         res.push_back(getObject(i));
@@ -160,6 +161,8 @@ size_t RuntimeState::getLine() const {
 }
 
 void RuntimeState::step() {
+    if (debug) std::cout << "running line " << (line + 1) << "\n";
+
     if (line >= instructions.size()) return exit(0);
 
     Assembly instruction = std::get<0>(instructions[line]);
@@ -182,6 +185,8 @@ void RuntimeState::step() {
         CASE_STEP(MODULO)
         CASE_STEP(EXPONENT)
         CASE_STEP(SET)
+        CASE_STEP(JUMP)
+        CASE_STEP(BRANCH_IF)
 
         default:
             throw std::runtime_error("Unknown instruction " + std::to_string((int)instruction));
@@ -194,22 +199,30 @@ void RuntimeState::jump(size_t line) {
     this->line = std::min(line, instructions.size() - 1);
 }
 
-void RuntimeState::ret() {
-    if (!returnStack.size()) return;
+void RuntimeState::jumpForward(int64_t offset) {
+    if (offset == 0) return;
+    jump(line + offset - 1);
+}
 
-    FunctionReturnState data = returnStack.top();
+void RuntimeState::ret() {
+    if (!returnStack.size()) throw std::runtime_error("Cannot return: Return stack is empty");
+
+    const FunctionReturnState& data = returnStack.top();
     returnStack.pop();
 
     Scope *scope = activeScope;
-    activeScope = scope->parent;
-    scopes.erase(std::find_if(scopes.begin(), scopes.end(), [scope] (std::unique_ptr<Scope>& v) {
-        return v.get() == scope;
-    }));
+    
+    if (scope) {
+        activeScope = scope->parent;
+        scopes.erase(std::find_if(scopes.begin(), scopes.end(), [scope] (std::unique_ptr<Scope>& v) {
+            return v.get() == scope;
+        }));
+    }
 
     jump(data.line);
 }
 
-void RuntimeState::pushReturn(size_t functionID) {
+void RuntimeState::pushReturn(std::optional<size_t> functionID) {
     returnStack.push({ functionID, line });
 }
 
@@ -240,6 +253,9 @@ std::vector<Object *> RuntimeState::getTemp(const std::vector<size_t>& idxs) {
 Object *RuntimeState::getReturnObject() {
     if (returnStack.empty()) return nullptr;
 
-    Function *fn = getFunction(returnStack.top().functionID);
+    std::optional<size_t> id = returnStack.top().functionID;
+    if (!id) return nullptr;
+
+    Function *fn = getFunction(*id);
     return fn ? fn->returnObj : nullptr;
 }

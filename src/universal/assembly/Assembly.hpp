@@ -22,6 +22,7 @@ enum class Assembly {
     SET,
     JUMP,
     BRANCH_IF,
+    RETURN_BRANCH,
     ASSEMBLY_MAX
 };
 
@@ -44,4 +45,5 @@ const std::map<Assembly, std::string> instructionNames = {
     { Assembly::SET, "set" },
     { Assembly::JUMP, "jmp" },
     { Assembly::BRANCH_IF, "bif" },
+    { Assembly::RETURN_BRANCH, "rb" }
 };

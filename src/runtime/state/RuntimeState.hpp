@@ -19,6 +19,7 @@ class RuntimeState : public AbstractFunctionCaller {
 
         std::vector<Instruction> instructions;
         std::stack<FunctionReturnState> returnStack;
+        std::stack<size_t> returnBranches;
         size_t line = 0;
         std::unique_ptr<Scope> globalScope = std::make_unique<Scope>();
         Scope *activeScope = nullptr;
@@ -51,7 +52,8 @@ class RuntimeState : public AbstractFunctionCaller {
         STEP_DECLARATION(SET);
         STEP_DECLARATION(JUMP);
         STEP_DECLARATION(BRANCH_IF);
-        
+        STEP_DECLARATION(RETURN_BRANCH);
+
     public:
         RuntimeState(const std::string& filename, bool debug = false);
 
@@ -60,7 +62,9 @@ class RuntimeState : public AbstractFunctionCaller {
         void jump(size_t line) override;
         void jumpForward(int64_t offset);
         void ret();
-        void pushReturn(std::optional<size_t> functionID = std::nullopt) override;
+        void retBranch();
+        void pushReturn(size_t functionID) override;
+        void pushBranch();
         void pushTemp(Object *obj);
         void moveTemp(Object *obj);
         void moveTemp(std::unique_ptr<Object> obj);

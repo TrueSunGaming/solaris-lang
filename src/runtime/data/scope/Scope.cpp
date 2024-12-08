@@ -2,6 +2,10 @@
 
 #include <algorithm>
 
+bool Scope::ownsObject(const Object *obj) const {
+    return objects.contains(obj);
+}
+
 Object *Scope::getMember(std::string name) {
     if (!members.contains(name)) return nullptr;
     return members.at(name).get();
@@ -22,6 +26,7 @@ Object *Scope::findAndGetMember(std::string name, Scope *globalScope) {
 
 void Scope::setMember(std::string name, Object *value) {
     members[name] = std::unique_ptr<Object>(value);
+    objects.insert(value);
 }
 
 void Scope::createMember(std::string name, ValueType type) {
@@ -31,6 +36,9 @@ void Scope::createMember(std::string name, ValueType type) {
 }
 
 void Scope::removeMember(std::string name) {
+    if (!members.contains(name)) return;
+
+    objects.erase(members.at(name).get());
     members.erase(name);
 }
 
@@ -66,4 +74,5 @@ SolarisFunction *Scope::findAndGetFunction(size_t id, Scope *globalScope) {
 
 void Scope::clear() {
     members.clear();
+    objects.clear();
 }

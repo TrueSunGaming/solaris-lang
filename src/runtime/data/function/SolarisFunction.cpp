@@ -1,5 +1,4 @@
 #include "SolarisFunction.hpp"
-#include <iostream>
 
 void SolarisFunction::call(AbstractFunctionCaller *runtime, const std::vector<Object *>& args) const {
     if (args.size() < this->args.size()) throw std::runtime_error("Runtime Error: Not enough arguments passed to " + name);

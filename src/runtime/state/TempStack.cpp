@@ -39,3 +39,16 @@ Object *TempStack::get(size_t index) {
 std::vector<Object *> TempStack::get(const std::vector<size_t>& indices) {
     return head->getValues(indices);
 }
+
+std::string TempStack::toString() const {
+    std::string res = "";
+
+    size_t count = 0;
+    for (const auto i : head->getValues()) {
+        if (i != head->value) res += "\n";
+        res += "%tmp" + std::to_string(count++) + ": ";
+        res += i->toString();
+    }
+
+    return res;
+}

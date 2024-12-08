@@ -161,7 +161,12 @@ size_t RuntimeState::getLine() const {
 }
 
 void RuntimeState::step() {
-    if (debug) std::cout << "running line " << (line + 1) << "\n";
+    if (debug) {
+        std::cout << "running line " << (line + 1) << " (";
+        std::cout << instructionNames.at(std::get<0>(instructions[line]));
+        for (const auto& i : std::get<1>(instructions[line])) std::cout << " " << i;
+        std::cout << ")\ntemp stack:\n" << tempStack.toString() << "\n";
+    }
 
     if (line >= instructions.size()) return exit(0);
 
@@ -187,6 +192,7 @@ void RuntimeState::step() {
         CASE_STEP(SET)
         CASE_STEP(JUMP)
         CASE_STEP(BRANCH_IF)
+        CASE_STEP(RETURN_BRANCH)
 
         default:
             throw std::runtime_error("Unknown instruction " + std::to_string((int)instruction));
@@ -222,8 +228,19 @@ void RuntimeState::ret() {
     jump(data.line);
 }
 
-void RuntimeState::pushReturn(std::optional<size_t> functionID) {
+void RuntimeState::retBranch() {
+    if (!returnBranches.size()) throw std::runtime_error("Cannot branch return: Branch return stack is empty");
+
+    jump(returnBranches.top());
+    returnBranches.pop();
+}
+
+void RuntimeState::pushReturn(size_t functionID) {
     returnStack.push({ functionID, line });
+}
+
+void RuntimeState::pushBranch() {
+    returnBranches.push(line);
 }
 
 void RuntimeState::pushTemp(Object *obj) {

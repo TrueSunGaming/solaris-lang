@@ -16,4 +16,6 @@ class TempStack {
         void pop(size_t count = 1, size_t start = 0);
         Object *get(size_t index);
         std::vector<Object *> get(const std::vector<size_t>& indices);
+
+        std::string toString() const;
 };

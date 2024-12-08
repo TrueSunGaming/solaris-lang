@@ -6,10 +6,13 @@
 
 class Scope {
     private:
-        std::unordered_map<std::string, std::unique_ptr<Object>> members = {};
+        std::unordered_map<std::string, std::unique_ptr<Object>> members;
+        std::set<const Object *> objects;
 
     public:
         Scope *parent;
+
+        bool ownsObject(const Object *obj) const;
 
         Object *getMember(std::string name);
         Scope *findMember(std::string name, Scope *globalScope = nullptr);

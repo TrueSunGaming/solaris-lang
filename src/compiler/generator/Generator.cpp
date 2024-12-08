@@ -194,11 +194,11 @@ std::vector<Instruction> Generator::generateConditional(AST *ast) {
     instructions.push_back({ Assembly::JUMP, { std::to_string(jumpLength) } });
 
     concat(instructions, trueBlock);
-    instructions.push_back({ Assembly::RETURN, {} });
+    instructions.push_back({ Assembly::RETURN_BRANCH, {} });
 
     if (falseBlock.size()) {
         concat(instructions, falseBlock);
-        instructions.push_back({ Assembly::RETURN, {} });
+        instructions.push_back({ Assembly::RETURN_BRANCH, {} });
     }
 
     concat(instructions, condition);
@@ -210,7 +210,6 @@ std::vector<Instruction> Generator::generateConditional(AST *ast) {
     };
 
     instructions.push_back({ Assembly::BRANCH_IF, args });
-    instructions.push_back({ Assembly::POP_TEMP, { "1", "0" } });
 
     return instructions;
 }

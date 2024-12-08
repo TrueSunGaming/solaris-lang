@@ -60,6 +60,8 @@ class Object {
         std::unique_ptr<Object> clone();
 
         Object *pop();
+    
+        std::string toString() const;
 
         Object& operator=(Object *other);
 };

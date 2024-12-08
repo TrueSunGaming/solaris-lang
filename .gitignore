@@ -13,6 +13,8 @@ CMakeUserPresets.json
 build
 .vscode
 test*
+!tests
+*.solex
 *.a
 *.lib
 *.so

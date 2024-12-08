@@ -1,5 +1,7 @@
 #include "Object.hpp"
+#include "function/SolarisFunction.hpp"
 #include <iostream>
+#include <sstream>
 
 Object::Object(ValueType type, void *value) : type(type), raw(value) {}
 
@@ -197,6 +199,48 @@ Object *Object::pop() {
     ownIterableMembers.pop_back();
 
     return res;
+}
+
+std::string Object::toString() const {
+    std::stringstream ss;
+
+    switch (getType()) {
+        case ValueType::STRING:
+            ss << getValueAs<std::string>();
+            break;
+        
+        case ValueType::INTEGER:
+            ss << getValueAs<int64_t>();
+            break;
+        
+        case ValueType::FLOAT:
+            ss << std::to_string(getValueAs<double>());
+            break;
+        
+        case ValueType::BOOLEAN: {
+            bool val = getValueAs<bool>();
+            ss << (val ? "true" : "false");
+            break;
+        }
+        
+        case ValueType::NULL_VAL:
+            ss << "null";
+            break;
+        
+        case ValueType::FUNCTION:
+            try {
+                const SolarisFunction *fn = static_cast<const SolarisFunction *>(this);
+                ss << "[Function " << fn->name << "]";
+            } catch(std::exception _) {
+                ss << "[Function " << this << "]";
+            }
+            break;
+        
+        default:
+            ss << "[Object " << this << " (type " << (int)getType() << ")]";
+    }
+
+    return ss.str();
 }
 
 void *Object::cloneValue() {

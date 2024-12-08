@@ -9,11 +9,15 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
+#include <chrono>
 
 #define CASE_STEP(x) \
     case Assembly::x: \
         step##x(args); \
         break;
+
+PCRECode RuntimeState::intRegex = PCRECode(tokenRegexMap.at(TokenType::INTEGER));
+PCRECode RuntimeState::floatRegex = PCRECode(tokenRegexMap.at(TokenType::FLOAT));
 
 std::vector<Instruction> RuntimeState::load(const std::string& filename) {
     FileManager file = FileManager(filename);
@@ -85,12 +89,12 @@ std::unique_ptr<Object> RuntimeState::createObject(const std::string& val) {
         return std::make_unique<Object>(ValueType::STRING, new std::string(mergeEscape(val.substr(1, val.size() - 2))));
     }
 
-    if (std::regex_match(val, std::regex(tokenRegexMap.at(TokenType::FLOAT)))) {
-        return std::make_unique<Object>(ValueType::FLOAT, new double(scientificToNumber<double>(val)));
+    if (intRegex.match(val)) {
+        return std::make_unique<Object>(ValueType::INTEGER, new int64_t(scientificToNumber<int64_t>(val)));
     }
 
-    if (std::regex_match(val, std::regex(tokenRegexMap.at(TokenType::INTEGER)))) {
-        return std::make_unique<Object>(ValueType::INTEGER, new int64_t(scientificToNumber<int64_t>(val)));
+    if (floatRegex.match(val)) {
+        return std::make_unique<Object>(ValueType::FLOAT, new double(scientificToNumber<double>(val)));
     }
 
     if (val == "true") return std::make_unique<Object>(ValueType::BOOLEAN, new bool(true));
@@ -161,14 +165,16 @@ size_t RuntimeState::getLine() const {
 }
 
 void RuntimeState::step() {
+    if (line >= instructions.size()) return exit(0);
+
     if (debug) {
         std::cout << "running line " << (line + 1) << " (";
         std::cout << instructionNames.at(std::get<0>(instructions[line]));
         for (const auto& i : std::get<1>(instructions[line])) std::cout << " " << i;
-        std::cout << ")\ntemp stack:\n" << tempStack.toString() << "\n";
+        std::cout << ") ";
     }
 
-    if (line >= instructions.size()) return exit(0);
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     Assembly instruction = std::get<0>(instructions[line]);
     std::vector<std::string> args = std::get<1>(instructions[line]);
@@ -197,6 +203,9 @@ void RuntimeState::step() {
         default:
             throw std::runtime_error("Unknown instruction " + std::to_string((int)instruction));
     }
+
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    if (debug) std::cout << "in " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << " microseconds\n";
 
     line++;
 }

@@ -3,6 +3,7 @@
 #include <stack>
 #include <optional>
 #include "../../universal/assembly/Instruction.hpp"
+#include "../../universal/regex/PCRECode.hpp"
 #include "FunctionReturnState.hpp"
 #include "../data/scope/Scope.hpp"
 #include "AbstractFunctionCaller.hpp"
@@ -15,6 +16,9 @@
 
 class RuntimeState : public AbstractFunctionCaller {
     private:
+        static PCRECode intRegex;
+        static PCRECode floatRegex;
+
         bool debug;
 
         std::vector<Instruction> instructions;

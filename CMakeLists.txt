@@ -20,16 +20,26 @@ endif (UNIX)
 set(LIB_NAME "solaris")
 set(LIB_PATH "${OUTDIR}/lib${LIB_NAME}.${LIB_EXTENSION}")
 
+include(FetchContent)
+
+set(PCRE2_SUPPORT_JIT ON)
+FetchContent_Declare(
+    pcre2
+    GIT_REPOSITORY https://github.com/PCRE2Project/pcre2.git
+)
+FetchContent_MakeAvailable(pcre2)
+
 add_executable(compiler)
 file(GLOB_RECURSE COMPILER_SOURCES "src/compiler/**.*pp")
 target_sources(compiler PRIVATE ${COMPILER_SOURCES})
-target_link_libraries(compiler ${LIB_PATH})
+target_link_libraries(compiler ${LIB_PATH} pcre2-8)
 
 add_executable(runtime)
 file(GLOB_RECURSE RUNTIME_SOURCES "src/runtime/**.*pp")
 target_sources(runtime PRIVATE ${RUNTIME_SOURCES})
-target_link_libraries(runtime ${LIB_PATH})
+target_link_libraries(runtime ${LIB_PATH} pcre2-8)
 
 add_library(${LIB_NAME} SHARED)
 file(GLOB_RECURSE UNIVERSAL_SOURCES "src/universal/**.*pp")
 target_sources(${LIB_NAME} PUBLIC ${UNIVERSAL_SOURCES})
+target_link_libraries(${LIB_NAME} pcre2-8)

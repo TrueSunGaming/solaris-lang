@@ -45,6 +45,7 @@ template <class T> std::vector<LinkedList<T> *> LinkedList<T>::getNodes(size_t s
 
 template <class T> std::vector<LinkedList<T> *> LinkedList<T>::getNodes(const std::vector<size_t>& distances) {
     std::vector<LinkedList<T> *> nodes = {};
+    nodes.reserve(distances.size());
 
     std::vector<size_t> sortedDistances = distances;
     std::sort(sortedDistances.begin(), sortedDistances.end());
@@ -76,6 +77,7 @@ template <class T> std::vector<T> LinkedList<T>::getValues(size_t startDistance,
 
 template <class T> std::vector<T> LinkedList<T>::getValues(const std::vector<size_t>& distances) {
     std::vector<T> values = {};
+    values.reserve(distances.size());
     for (const auto node : getNodes(distances)) values.push_back(node->value);
     return values;
 }

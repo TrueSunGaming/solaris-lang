@@ -7,5 +7,5 @@ fn int fib(int x) {
 }
 
 fn void main() {
-    std::println(fib(20));
+    std::println(fib(25));
 }

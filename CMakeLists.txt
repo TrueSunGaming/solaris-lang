@@ -22,11 +22,11 @@ set(LIB_PATH "${OUTDIR}/lib${LIB_NAME}.${LIB_EXTENSION}")
 
 include(FetchContent)
 
-set(PCRE2_SUPPORT_JIT ON)
 FetchContent_Declare(
     pcre2
     GIT_REPOSITORY https://github.com/PCRE2Project/pcre2.git
 )
+set(PCRE2_SUPPORT_JIT ON)
 FetchContent_MakeAvailable(pcre2)
 
 add_executable(compiler)
